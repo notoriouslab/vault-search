@@ -1,5 +1,10 @@
-# Spectra app data
+# Spectra
 .spectra/
+.spectra.yaml
+openspec/
+
+# Lock file
+package-lock.json
 
 # Build output
 main.js
