@@ -372,8 +372,8 @@ ${content}`;
             } else if (currentAction) {
                 if (line.startsWith("- path: `")) {
                     currentAction.path = line.match(/`([^`]+)`/)?.[1] ?? "";
-                } else if (line.startsWith("- description: ") || line.startsWith("- new: ")) {
-                    currentAction.newDesc = line.replace(/^- (description|new): /, "");
+                } else if (line.startsWith("- **generated**: ") || line.startsWith("- **after**: ")) {
+                    currentAction.newDesc = line.replace(/^- \*\*(generated|after)\*\*: /, "");
                 } else if (line.startsWith("- tags: ")) {
                     currentAction.newTags = line.slice(8).split(",").map(s => s.trim()).filter(Boolean);
                 }
