@@ -1,7 +1,7 @@
 import { Notice, TFile } from "obsidian";
 import type VaultSearchPlugin from "./main";
 import { NoteEntry } from "./types";
-import { checkOllama, embedText, splitChunks, stripFrontmatter } from "./utils";
+import { checkOllama, embedTexts, splitChunks, stripFrontmatter } from "./utils";
 import { t } from "./i18n";
 
 const BATCH_SIZE = 5;
@@ -10,7 +10,7 @@ export class Indexer {
     constructor(private plugin: VaultSearchPlugin) {}
 
     shouldExclude(path: string): boolean {
-        return this.plugin.settings.excludePatterns.some(p => path.startsWith(p));
+        return this.plugin.settings.excludePatterns.some(p => path.includes(p));
     }
 
     private getMarkdownFiles(): TFile[] {
@@ -272,14 +272,18 @@ export class Indexer {
     }
 
     private async embedBatch(texts: string[]): Promise<number[][]> {
-        const { ollamaUrl, ollamaModel, apiFormat } = this.plugin.settings;
-        return Promise.all(texts.map(async (text) => {
-            try {
-                return await embedText(text, ollamaUrl, ollamaModel, apiFormat, undefined, this.plugin.settings.apiKey);
-            } catch (e) {
-                console.warn("Vault Search: embed failed", e);
-                return [];
-            }
-        }));
+        const { ollamaUrl, ollamaModel, apiFormat, apiKey } = this.plugin.settings;
+        try {
+            return await embedTexts(texts, ollamaUrl, ollamaModel, apiFormat, undefined, apiKey);
+        } catch (e) {
+            console.warn("Vault Search: batch embed failed, falling back to individual", e);
+            // Fallback: embed one by one so partial failures don't lose everything
+            return Promise.all(texts.map(async (text) => {
+                try {
+                    const [emb] = await embedTexts([text], ollamaUrl, ollamaModel, apiFormat, undefined, apiKey);
+                    return emb ?? [];
+                } catch { return []; }
+            }));
+        }
     }
 }

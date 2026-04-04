@@ -1,6 +1,8 @@
 import { Notice, TFile } from "obsidian";
 import type VaultSearchPlugin from "./main";
 import { checkOllama, stripFrontmatter } from "./utils";
+
+const LLM_TIMEOUT_MS = 60000;
 import { t } from "./i18n";
 
 interface DescAction {
@@ -228,20 +230,34 @@ export class DescriptionGenerator {
 筆記內容：
 ${content}`;
 
-        const resp = await fetch(`${url}/api/chat`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                model,
-                messages: [{ role: "user", content: prompt }],
-                stream: false,
-                format: "json",
-                think: false,
-            }),
-        });
+        const apiKey = this.plugin.settings.apiKey;
+        const headers: Record<string, string> = { "Content-Type": "application/json" };
+        if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+
+        const abortController = new AbortController();
+        const timer = setTimeout(() => abortController.abort(), LLM_TIMEOUT_MS);
+
+        let resp: Response;
+        try {
+            resp = await fetch(`${url}/api/chat`, {
+                method: "POST",
+                headers,
+                body: JSON.stringify({
+                    model,
+                    messages: [{ role: "user", content: prompt }],
+                    stream: false,
+                    format: "json",
+                    think: false,
+                }),
+                signal: abortController.signal,
+            });
+        } finally {
+            clearTimeout(timer);
+        }
 
         if (!resp.ok) {
-            throw new Error(`Ollama ${resp.status}: ${await resp.text()}`);
+            const errText = await resp.text();
+            throw new Error(`Ollama ${resp.status}: ${errText.length > 200 ? errText.slice(0, 200) + "..." : errText}`);
         }
 
         const data = await resp.json();

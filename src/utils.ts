@@ -67,28 +67,45 @@ export async function embedText(
     signal?: AbortSignal,
     apiKey?: string,
 ): Promise<number[]> {
+    const results = await embedTexts([text], url, model, format, signal, apiKey);
+    return results[0] ?? [];
+}
+
+export async function embedTexts(
+    texts: string[],
+    url: string,
+    model: string,
+    format: ApiFormat,
+    signal?: AbortSignal,
+    apiKey?: string,
+): Promise<number[][]> {
+    if (texts.length === 0) return [];
+
     if (format === "openai") {
         const resp = await fetch(`${url}/v1/embeddings`, {
             method: "POST",
             headers: buildHeaders(apiKey),
-            body: JSON.stringify({ model, input: text }),
+            body: JSON.stringify({ model, input: texts }),
             signal,
         });
         if (!resp.ok) throw new Error(`API ${resp.status}: ${truncateError(await resp.text())}`);
         const data = await resp.json();
-        return data.data?.[0]?.embedding ?? [];
+        // OpenAI returns {data: [{embedding: [...]}, ...]} sorted by index
+        return (data.data ?? [])
+            .sort((a: {index: number}, b: {index: number}) => a.index - b.index)
+            .map((d: {embedding: number[]}) => d.embedding ?? []);
     }
 
-    // Ollama format
+    // Ollama format — supports input as string[]
     const resp = await fetch(`${url}/api/embed`, {
         method: "POST",
         headers: buildHeaders(apiKey),
-        body: JSON.stringify({ model, input: text }),
+        body: JSON.stringify({ model, input: texts }),
         signal,
     });
     if (!resp.ok) throw new Error(`Ollama ${resp.status}: ${truncateError(await resp.text())}`);
     const data = await resp.json();
-    return data.embeddings?.[0] ?? [];
+    return data.embeddings ?? [];
 }
 
 export function splitChunks(text: string, size: number, overlap: number): string[] {

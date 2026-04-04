@@ -201,12 +201,12 @@ export default class VaultSearchPlugin extends Plugin {
         );
     }
 
-    private onFileRename(file: unknown, oldPath: string) {
+    private async onFileRename(file: unknown, oldPath: string) {
         if (!this.settings.autoIndex) return;
         if (!(file instanceof TFile) || file.extension !== "md") return;
 
         this.indexer.renameInIndex(oldPath, file.path);
-        this.saveIndex();
+        await this.saveIndex();
     }
 
     async loadSettings() {
