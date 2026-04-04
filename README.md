@@ -16,7 +16,7 @@
 
 ---
 
-> *"Unlike feature-heavy plugins with complex setup, Vault Search focuses on making 'search by meaning' dead simple and genuinely useful."*
+> *Vault Search focuses on making "search by meaning" dead simple and genuinely useful.*
 
 No cloud services. No API keys. No subscription fees. Your notes never leave your machine.
 
@@ -24,9 +24,9 @@ No cloud services. No API keys. No subscription fees. Your notes never leave you
 
 ## Why Vault Search?
 
-[Andrej Karpathy recently shared](https://venturebeat.com/data/karpathy-shares-llm-knowledge-base-architecture-that-bypasses-rag-with-an/) his vision of LLM-maintained knowledge bases — letting AI "compile" your notes into a structured wiki. It's a compelling approach, but it assumes you're ready to hand full editorial control to an LLM.
+[Andrej Karpathy shared](https://venturebeat.com/data/karpathy-shares-llm-knowledge-base-architecture-that-bypasses-rag-with-an/) his vision of LLM-maintained knowledge bases — letting AI "compile" your notes into a structured wiki. It's a compelling approach, but it assumes you're ready to hand full editorial control to an LLM.
 
-**Vault Search takes a different stance.** We believe your original notes have intrinsic value. The best search system doesn't replace your writing — it helps you *rediscover* it. RAG and semantic search shine precisely because they work *with* your existing content, not over it.
+**Vault Search takes a different stance.** We believe your original notes have intrinsic value. The best search system doesn't replace your writing — it helps you **rediscover** it. RAG and semantic search shine precisely because they work *with* your existing content, not over it.
 
 ### What sets Vault Search apart
 
@@ -40,11 +40,16 @@ No cloud services. No API keys. No subscription fees. Your notes never leave you
 
 **LLM-powered descriptions** — A local LLM generates frontmatter descriptions for your notes, giving the embedding model a high-quality summary to work with. This dramatically improves search relevance for long notes — a feature rarely seen in lightweight plugins.
 
-**Runs on 8GB laptops** — Minimal memory and CPU footprint. Recommended models (`qwen3-embedding:0.6b` + `qwen3:1.7b`) fit comfortably on an 8GB MacBook Air. Incremental indexing + debounce means near-zero overhead in daily use.
+**Runs on 8GB laptops** — Minimal memory and CPU footprint. Recommended models work on a MacBook M2 with 8GB RAM. Incremental indexing + debounce means near-zero overhead in daily use.
 
 **Flexible and compatible** — Works with Ollama, LM Studio, llama.cpp, vLLM, or any OpenAI-compatible server. Choose the models that work best for your language and hardware.
 
-**Optional chunking** — For users with long documents, enable chunking to search within specific sections. Three modes: Off (default), Smart (skip notes with descriptions), All. Most users won't need it; power users will love it.
+**Optional chunking** — For users with long documents, enable chunking to search within specific sections. Three modes:
+- Off (default)
+- Smart (skip notes with descriptions)
+- All
+
+Most users don't need chunking, but power users can adjust as needed.
 
 > *"Strikes an ideal balance between privacy, simplicity, Chinese language support, and search quality."*
 
@@ -66,7 +71,8 @@ No cloud services. No API keys. No subscription fees. Your notes never leave you
 
 - [Ollama](https://ollama.com/) installed and running
 - An embedding model (e.g., `ollama pull qwen3-embedding:0.6b`)
-- Obsidian desktop (not mobile)
+- An LLM model for description generation (e.g., `ollama pull qwen3:1.7b`) (optional)
+- Obsidian desktop (no mobile support planned yet)
 
 ## Installation
 

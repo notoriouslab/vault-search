@@ -1,7 +1,6 @@
 <p align="center">
   <h1 align="center">Vault Search</h1>
   <p align="center">Obsidian 本地語意搜尋 — 簡單、隱私、中文友善</p>
-</p>
 
 <p align="center">
   <a href="https://github.com/notoriouslab/vault-search/releases"><img src="https://img.shields.io/github/v/release/notoriouslab/vault-search?style=flat-square" alt="Release"></a>
@@ -16,7 +15,7 @@
 
 ---
 
-> *「不像某些功能豐富但設定複雜的插件，Vault Search 專注把『懂意思的搜尋』做到又簡單又好用。」*
+> *Vault Search 專注把『懂意思的搜尋』做到又簡單又好用*
 
 不需要雲端服務、不需要 API Key、不需要付費訂閱。筆記不離開你的電腦。
 
@@ -24,9 +23,9 @@
 
 ## 為什麼選擇 Vault Search？
 
-[Andrej Karpathy 最近分享了](https://venturebeat.com/data/karpathy-shares-llm-knowledge-base-architecture-that-bypasses-rag-with-an/)他用 LLM 維護知識庫的願景 — 讓 AI「編譯」你的筆記成結構化 wiki。這是個很吸引人的做法，但前提是你願意把編輯權完全交給 LLM。
+[Andrej Karpathy 分享了](https://venturebeat.com/data/karpathy-shares-llm-knowledge-base-architecture-that-bypasses-rag-with-an/)他用 LLM 維護知識庫的願景 — 讓 AI「編譯」你的筆記成結構化 wiki。這是個很吸引人的做法，但前提是你願意把編輯權完全交給 LLM。
 
-**Vault Search 採取不同立場。** 我們相信你的原始筆記有其根本價值。最好的搜尋系統不是取代你的寫作，而是幫你*重新發現*它。RAG 和語意搜尋之所以強大，正是因為它們與你的既有內容*協作*，而非凌駕其上。
+**Vault Search 則認為：** 我們相信你的原始筆記有其根本價值。最好的搜尋系統不是取代你的寫作，而是幫你<font color="#ff0000">重新發現它</font>。RAG 和語意搜尋之所以強大，正是因為它們與你的既有內容*協作*，而非凌駕其上。
 
 ### 核心優勢
 
@@ -40,11 +39,16 @@
 
 **LLM 自動生成描述** — 用本地 LLM 為筆記產生 description frontmatter，讓 embedding 不再只看原始內容，而是包含高品質摘要。搜尋相關性明顯更好 — 這是其他輕量插件少見的功能。
 
-**輕量，8GB 就能跑** — 設計極簡，記憶體與 CPU 佔用低。推薦模型在 8GB RAM 筆電上流暢運行。增量索引 + debounce 機制，日常使用幾乎感覺不到負擔。
+**輕量，8GB 就能跑** — 設計極簡，記憶體與 CPU 佔用低。推薦模型在 Macbook M2 8GB 筆電上就可以使用。增量索引 + debounce 機制，日常使用幾乎感覺不到負擔。
 
 **高度彈性** — 除了 Ollama，也支援 LM Studio、llama.cpp、vLLM 等 OpenAI-compatible 伺服器。自由選擇最適合你的模型。
 
-**可選 Chunking** — 長文使用者可開啟 chunking 搜尋特定段落。三種模式：關閉（預設）、智慧（有 description 的跳過）、全部。大多數人不需要，進階使用者會喜歡。
+**可選 Chunking** — 長文使用者可開啟 chunking 搜尋特定段落，三種模式：
+關閉（預設）
+智慧（有 description 的跳過）
+全部
+
+一般使用者可以不用 Chunking，但進階使用者可以依照需要調整。
 
 > *「在隱私、輕量、中文表現、搜尋體驗之間取得極佳平衡。」*
 >
@@ -52,7 +56,7 @@
 
 ## 功能
 
-- **語意搜尋** — 用模糊描述找到相關筆記，不只是關鍵字比對。描述越多，找到的文件越精準
+- **語意搜尋** — 用模糊描述找到相關筆記，不只是關鍵字比對，描述越多，找到的文件越精準
 - **側邊欄面板** — 搜尋結果固定在右側，點開筆記不會消失
 - **快速搜尋彈窗** — Cmd/Ctrl+P 快速跳轉
 - **尋找相似筆記** — 打開任一筆記，即時發現相關筆記（不需呼叫 API）
@@ -68,7 +72,8 @@
 
 - [Ollama](https://ollama.com/) 已安裝並執行中
 - 已下載 embedding 模型（例如 `ollama pull qwen3-embedding:0.6b`）
-- Obsidian 桌面版（不支援手機）
+- 已下載 LLM 分析模型（例如 `ollama pull qwen3:1.7b` ）（Description 生成選項）
+- Obsidian 桌面版（目前尚未有手機版規劃）
 
 ## 安裝
 
@@ -174,12 +179,12 @@
 
 ## 推薦模型
 
-| 模型 | 大小 | 用途 | 備註 |
-|---|---|---|---|
-| `qwen3-embedding:0.6b` | 639MB | Embedding | 中英文最佳平衡 |
-| `nomic-embed-text` | 274MB | Embedding | 更輕量，英文為主 |
-| `qwen3:1.7b` | 1.4GB | LLM | 品質好，支援 2000+ 字 input |
-| `gemma3:1b` | 815MB | LLM | 更輕量，但 input 超過 500 字不穩定 |
+| 模型                     | 大小    | 用途        | 備註                      |
+| ---------------------- | ----- | --------- | ----------------------- |
+| `qwen3-embedding:0.6b` | 639MB | Embedding | 中英文最佳平衡                 |
+| `nomic-embed-text`     | 274MB | Embedding | 更輕量，英文為主                |
+| `qwen3:1.7b`           | 1.4GB | LLM       | 品質好，支援 2000+ 字 input    |
+| `gemma3:1b`            | 815MB | LLM       | 更輕量，但 input 超過 500 字不穩定 |
 
 > 8GB RAM 的機器建議使用 `qwen3-embedding:0.6b` + `qwen3:1.7b` 的組合。
 
