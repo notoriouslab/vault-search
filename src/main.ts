@@ -9,7 +9,7 @@ import { Indexer } from "./indexer";
 import { SearchModal } from "./searcher";
 import { SearchView, VIEW_TYPE_SEARCH } from "./search-view";
 import { VaultSearchSettingTab } from "./settings";
-import { cosineSimilarity } from "./utils";
+import { searchNoteScore } from "./utils";
 import { DescriptionGenerator } from "./description-generator";
 import { t } from "./i18n";
 
@@ -147,8 +147,7 @@ export default class VaultSearchPlugin extends Plugin {
         const results: import("./types").SearchResult[] = [];
         for (const [path, other] of Object.entries(this.index.notes)) {
             if (path === file.path) continue;
-            if (!other.embedding || other.embedding.length === 0) continue;
-            const score = cosineSimilarity(entry.embedding, other.embedding);
+            const score = searchNoteScore(entry.embedding, other);
             if (score >= this.settings.minScore) {
                 results.push({ path, title: other.title, tags: other.tags, score, tier: other.tier });
             }

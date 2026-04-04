@@ -175,6 +175,49 @@ export class VaultSearchSettingTab extends PluginSettingTab {
                 });
             });
 
+        // Chunking
+        new Setting(containerEl)
+            .setName(t.chunkingMode)
+            .setDesc(t.chunkingModeDesc)
+            .addDropdown(drop => {
+                drop.addOption("off", t.chunkingOff);
+                drop.addOption("smart", t.chunkingSmart);
+                drop.addOption("all", t.chunkingAll);
+                drop.setValue(this.plugin.settings.chunkingMode);
+                drop.onChange(async (val) => {
+                    this.plugin.settings.chunkingMode = val as "off" | "smart" | "all";
+                    await this.plugin.saveSettings();
+                });
+            });
+
+        new Setting(containerEl)
+            .setName(t.chunkSize)
+            .setDesc(t.chunkSizeDesc)
+            .addText(text => {
+                text.setValue(String(this.plugin.settings.chunkSize));
+                text.onChange(async (val) => {
+                    const n = parseInt(val, 10);
+                    if (!isNaN(n) && n >= 200) {
+                        this.plugin.settings.chunkSize = n;
+                        await this.plugin.saveSettings();
+                    }
+                });
+            });
+
+        new Setting(containerEl)
+            .setName(t.chunkOverlap)
+            .setDesc(t.chunkOverlapDesc)
+            .addText(text => {
+                text.setValue(String(this.plugin.settings.chunkOverlap));
+                text.onChange(async (val) => {
+                    const n = parseInt(val, 10);
+                    if (!isNaN(n) && n >= 0 && n < this.plugin.settings.chunkSize) {
+                        this.plugin.settings.chunkOverlap = n;
+                        await this.plugin.saveSettings();
+                    }
+                });
+            });
+
         new Setting(containerEl)
             .setName(t.autoIndex)
             .setDesc(t.autoIndexDesc)

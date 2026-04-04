@@ -91,6 +91,31 @@ export async function embedText(
     return data.embeddings?.[0] ?? [];
 }
 
+export function splitChunks(text: string, size: number, overlap: number): string[] {
+    if (text.length <= size) return [text];
+    const step = size - overlap;
+    const chunks: string[] = [];
+    for (let i = 0; i < text.length; i += step) {
+        chunks.push(text.slice(i, i + size));
+        if (i + size >= text.length) break;
+    }
+    return chunks;
+}
+
+export function searchNoteScore(queryVec: number[], entry: import("./types").NoteEntry): number {
+    if (entry.chunks && entry.chunks.length > 0) {
+        let maxScore = 0;
+        for (const chunk of entry.chunks) {
+            if (chunk.length === 0) continue;
+            const s = cosineSimilarity(queryVec, chunk);
+            if (s > maxScore) maxScore = s;
+        }
+        return maxScore;
+    }
+    if (!entry.embedding || entry.embedding.length === 0) return 0;
+    return cosineSimilarity(queryVec, entry.embedding);
+}
+
 export async function getContentPreview(app: App, file: TFile, maxChars = 100): Promise<string> {
     const cache = app.metadataCache.getFileCache(file);
     const desc = cache?.frontmatter?.description;

@@ -1,7 +1,7 @@
 import { SuggestModal, TFile } from "obsidian";
 import type VaultSearchPlugin from "./main";
 import { SearchResult } from "./types";
-import { checkOllama, cosineSimilarity, embedText, getContentPreview } from "./utils";
+import { checkOllama, embedText, getContentPreview, searchNoteScore } from "./utils";
 import { t } from "./i18n";
 import { expandQuery } from "./synonyms";
 
@@ -94,8 +94,7 @@ export class SearchModal extends SuggestModal<SearchResult> {
             const results: SearchResult[] = [];
             for (const [path, entry] of Object.entries(this.plugin.index.notes)) {
                 if (searchScope === "hot" && entry.tier !== "hot") continue;
-                if (!entry.embedding || entry.embedding.length === 0) continue;
-                const score = cosineSimilarity(queryVec, entry.embedding);
+                const score = searchNoteScore(queryVec, entry);
                 if (score >= minScore) {
                     results.push({ path, title: entry.title, tags: entry.tags, score, tier: entry.tier });
                 }

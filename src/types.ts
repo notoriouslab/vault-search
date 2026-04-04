@@ -3,6 +3,7 @@
 // ============================================================
 
 export type ApiFormat = "ollama" | "openai";
+export type ChunkingMode = "off" | "smart" | "all";
 
 export interface VaultSearchSettings {
     ollamaUrl: string;
@@ -19,6 +20,9 @@ export interface VaultSearchSettings {
     synonyms: Record<string, string[]>;
     llmModel: string;
     minDescLength: number;
+    chunkingMode: ChunkingMode;
+    chunkSize: number;
+    chunkOverlap: number;
 }
 
 export const DEFAULT_SETTINGS: VaultSearchSettings = {
@@ -36,6 +40,9 @@ export const DEFAULT_SETTINGS: VaultSearchSettings = {
     synonyms: {},
     llmModel: "qwen3:1.7b",
     minDescLength: 30,
+    chunkingMode: "off" as ChunkingMode,
+    chunkSize: 1000,
+    chunkOverlap: 200,
 };
 
 export interface NoteEntry {
@@ -44,6 +51,7 @@ export interface NoteEntry {
     tier: "hot" | "cold";
     mtime: number;
     embedding: number[];
+    chunks?: number[][];
 }
 
 export interface IndexMeta {

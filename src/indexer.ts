@@ -1,7 +1,7 @@
 import { Notice, TFile } from "obsidian";
 import type VaultSearchPlugin from "./main";
 import { NoteEntry } from "./types";
-import { checkOllama, embedText, stripFrontmatter } from "./utils";
+import { checkOllama, embedText, splitChunks, stripFrontmatter } from "./utils";
 import { t } from "./i18n";
 
 const BATCH_SIZE = 5;
@@ -75,14 +75,39 @@ export class Indexer {
         return full.length > maxChars ? full.slice(0, maxChars) : full;
     }
 
-    private buildNoteEntry(file: TFile, embedding: number[]): NoteEntry {
-        return {
+    private buildNoteEntry(file: TFile, embedding: number[], chunks?: number[][]): NoteEntry {
+        const entry: NoteEntry = {
             title: this.extractTitle(file),
             tags: this.extractTags(file),
             tier: this.computeTier(file),
             mtime: file.stat.mtime,
             embedding,
         };
+        if (chunks && chunks.length > 0) entry.chunks = chunks;
+        return entry;
+    }
+
+    private shouldChunkNote(file: TFile): boolean {
+        const { chunkingMode } = this.plugin.settings;
+        if (chunkingMode === "off") return false;
+        if (chunkingMode === "all") return true;
+        // "smart": chunk only if no description
+        const cache = this.plugin.app.metadataCache.getFileCache(file);
+        const desc = cache?.frontmatter?.description ?? "";
+        return desc.length < this.plugin.settings.minDescLength;
+    }
+
+    private async buildChunkEmbeddings(file: TFile): Promise<number[][]> {
+        const content = await this.plugin.app.vault.cachedRead(file);
+        const body = stripFrontmatter(content);
+        const title = this.extractTitle(file);
+        const { chunkSize, chunkOverlap } = this.plugin.settings;
+
+        const textChunks = splitChunks(body, chunkSize, chunkOverlap);
+        // Prepend title to each chunk for context
+        const embedTexts = textChunks.map(c => `${title}\n${c}`);
+
+        return this.embedBatch(embedTexts);
     }
 
     async rebuild() {
@@ -110,6 +135,24 @@ export class Indexer {
             }
 
             progress.setMessage(t.noticeIndexing(Math.min(i + BATCH_SIZE, files.length), files.length));
+        }
+
+        // Chunking pass (after base embeddings)
+        if (this.plugin.settings.chunkingMode !== "off") {
+            const toChunk = files.filter(f => this.shouldChunkNote(f) && notes[f.path]);
+            for (let i = 0; i < toChunk.length; i++) {
+                const file = toChunk[i];
+                try {
+                    const chunks = await this.buildChunkEmbeddings(file);
+                    const valid = chunks.filter(c => c.length > 0);
+                    if (valid.length > 1) { // Only store chunks if > 1 (otherwise base embedding suffices)
+                        notes[file.path].chunks = valid;
+                    }
+                } catch (e) {
+                    console.warn(`Vault Search: chunking failed for ${file.path}`, e);
+                }
+                progress.setMessage(`Chunking: ${i + 1}/${toChunk.length}...`);
+            }
         }
 
         progress.hide();

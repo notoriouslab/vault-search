@@ -26,6 +26,15 @@ export interface Locale {
     autoIndexDesc: string;
     synonymsLabel: string;
     synonymsDesc: string;
+    chunkingMode: string;
+    chunkingModeDesc: string;
+    chunkingOff: string;
+    chunkingSmart: string;
+    chunkingAll: string;
+    chunkSize: string;
+    chunkSizeDesc: string;
+    chunkOverlap: string;
+    chunkOverlapDesc: string;
     llmModel: string;
     llmModelDesc: string;
     minDescLength: string;
@@ -113,6 +122,15 @@ const en: Locale = {
     excludePatternsDesc: "Folder prefixes to exclude from indexing (one per line)",
     autoIndex: "Auto-index on change",
     autoIndexDesc: "Automatically re-embed notes when they are modified",
+    chunkingMode: "Chunking mode",
+    chunkingModeDesc: "Split long notes into overlapping chunks for better search on long documents",
+    chunkingOff: "Off",
+    chunkingSmart: "Smart (skip notes with description)",
+    chunkingAll: "All notes",
+    chunkSize: "Chunk size",
+    chunkSizeDesc: "Characters per chunk (rebuild index after changing)",
+    chunkOverlap: "Chunk overlap",
+    chunkOverlapDesc: "Overlapping characters between chunks",
     synonymsLabel: "Synonyms",
     synonymsDesc: "One per line: keyword = synonym1, synonym2",
     llmModel: "LLM model",
@@ -203,6 +221,15 @@ const zhTW: Locale = {
     excludePatternsDesc: "不索引的資料夾前綴（每行一個）",
     autoIndex: "自動更新索引",
     autoIndexDesc: "筆記修改時自動重新 embed",
+    chunkingMode: "Chunking 模式",
+    chunkingModeDesc: "將長文切成重疊片段，提升長文搜尋品質",
+    chunkingOff: "關閉",
+    chunkingSmart: "智慧（有 description 的跳過）",
+    chunkingAll: "全部筆記",
+    chunkSize: "Chunk 大小",
+    chunkSizeDesc: "每個 chunk 的字數（修改後需重建索引）",
+    chunkOverlap: "Chunk 重疊",
+    chunkOverlapDesc: "相鄰 chunk 重疊的字數",
     synonymsLabel: "同義詞",
     synonymsDesc: "每行一組：關鍵字 = 同義詞1, 同義詞2",
     llmModel: "LLM 模型",
