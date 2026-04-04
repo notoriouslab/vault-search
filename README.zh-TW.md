@@ -1,6 +1,6 @@
 <p align="center">
   <h1 align="center">Vault Search</h1>
-  <p align="center">Obsidian 語意搜尋，使用本地 Embedding 模型</p>
+  <p align="center">Obsidian 本地語意搜尋 — 簡單、隱私、中文友善</p>
 </p>
 
 <p align="center">
@@ -16,9 +16,39 @@
 
 ---
 
+> *「不像某些功能豐富但設定複雜的插件，Vault Search 專注把『懂意思的搜尋』做到又簡單又好用。」*
+
 不需要雲端服務、不需要 API Key、不需要付費訂閱。筆記不離開你的電腦。
 
 ![搜尋面板](./docs/search-panel.png)
+
+## 為什麼選擇 Vault Search？
+
+[Andrej Karpathy 最近分享了](https://venturebeat.com/data/karpathy-shares-llm-knowledge-base-architecture-that-bypasses-rag-with-an/)他用 LLM 維護知識庫的願景 — 讓 AI「編譯」你的筆記成結構化 wiki。這是個很吸引人的做法，但前提是你願意把編輯權完全交給 LLM。
+
+**Vault Search 採取不同立場。** 我們相信你的原始筆記有其根本價值。最好的搜尋系統不是取代你的寫作，而是幫你*重新發現*它。RAG 和語意搜尋之所以強大，正是因為它們與你的既有內容*協作*，而非凌駕其上。
+
+### 核心優勢
+
+**完全本地，真正隱私** — 所有 embedding、索引、搜尋、描述生成都在你的電腦上完成。沒有資料離開你的機器。這不是一個開關選項，而是架構本身。
+
+**極簡且高效** — 右側邊欄常駐顯示搜尋結果，Cmd/Ctrl+P 快速彈出搜尋視窗，一鍵「尋找相似」立即找到相關筆記。介面乾淨、操作直覺。
+
+**專為中文優化** — 官方推薦 `qwen3-embedding:0.6b`，對繁體中文與英文的語意理解表現優秀。結合同義詞擴展，即使你用不同詞彙描述相同概念，也能找到想要的筆記。
+
+**智慧分層優先** — Hot/Cold 機制自動優先顯示近期修改或有雙向連結的筆記，讓搜尋結果更貼近你的實際使用習慣。冷門筆記不會稀釋結果。
+
+**LLM 自動生成描述** — 用本地 LLM 為筆記產生 description frontmatter，讓 embedding 不再只看原始內容，而是包含高品質摘要。搜尋相關性明顯更好 — 這是其他輕量插件少見的功能。
+
+**輕量，8GB 就能跑** — 設計極簡，記憶體與 CPU 佔用低。推薦模型在 8GB RAM 筆電上流暢運行。增量索引 + debounce 機制，日常使用幾乎感覺不到負擔。
+
+**高度彈性** — 除了 Ollama，也支援 LM Studio、llama.cpp、vLLM 等 OpenAI-compatible 伺服器。自由選擇最適合你的模型。
+
+**可選 Chunking** — 長文使用者可開啟 chunking 搜尋特定段落。三種模式：關閉（預設）、智慧（有 description 的跳過）、全部。大多數人不需要，進階使用者會喜歡。
+
+> *「在隱私、輕量、中文表現、搜尋體驗之間取得極佳平衡。」*
+>
+> *「適合已經習慣『一篇筆記聚焦一個主題 + YAML 描述』的使用者，也為長內容使用者準備了升級路徑。」*
 
 ## 功能
 
@@ -27,7 +57,8 @@
 - **快速搜尋彈窗** — Cmd/Ctrl+P 快速跳轉
 - **尋找相似筆記** — 打開任一筆記，即時發現相關筆記（不需呼叫 API）
 - **智慧索引** — 增量更新，只重新 embed 變更的筆記，檔案修改時自動觸發
-- **Hot/Cold 分層** — 有連結、近期建立的筆記優先顯示；孤立筆記預設隱藏但可搜尋
+- **Hot/Cold 分層** — 有連結、近期建立的筆記優先顯示
+- **Chunking** — 可選的長文分段搜尋（預設關閉）
 - **Description 生成器** — 用本地 LLM 為筆記生成 frontmatter 描述，提升搜尋品質
 - **同義詞擴展** — 自訂同義詞提升搜尋召回率
 - **多格式 API** — 支援 Ollama 和 OpenAI-compatible（LM Studio、llama.cpp、vLLM 等）
@@ -59,6 +90,8 @@
 2. 按 **重建** 建立索引
 3. **Cmd/Ctrl+P → 「Vault Search: 語意搜尋」** 或點左側 ribbon icon
 
+> 提示：如果有長筆記，建議先跑「生成 description（預覽）」產生摘要，再重建索引，搜尋品質會更好。
+
 ## 設定
 
 <details>
@@ -70,12 +103,16 @@
 |---|---|---|
 | 伺服器網址 | `http://localhost:11434` | Ollama 或 OpenAI-compatible 伺服器 |
 | API 格式 | Ollama | Ollama 或 OpenAI-compatible |
-| Embedding 模型 | `qwen3-embedding:0.6b` | 用於生成向量的模型（從 Ollama 自動列出） |
+| API Key | — | 選填，用於需要認證的伺服器 |
+| Embedding 模型 | `qwen3-embedding:0.6b` | 用於生成向量的模型 |
 | 顯示筆數 | 10 | 搜尋結果上限 |
 | 最低分數 | 0.5 | 餘弦相似度門檻（0–1） |
 | 最大 Embed 字數 | 2000 | 每篇筆記截取前 N 字做 embedding |
 | Hot 天數 | 90 | 近 N 天建立的筆記視為 hot |
 | 搜尋範圍 | 僅 Hot | 僅 Hot 或全部 |
+| Chunking 模式 | 關閉 | 關閉 / 智慧 / 全部 |
+| Chunk 大小 | 1000 | 每個 chunk 的字數 |
+| Chunk 重疊 | 200 | 相鄰 chunk 重疊的字數 |
 | 排除路徑 | `_templates/` `.trash/` `.obsidian/` | 不索引的資料夾 |
 | 同義詞 | — | 每行一組：`關鍵字 = 同義詞1, 同義詞2` |
 | 自動更新索引 | 開啟 | 檔案修改時自動重新 embed |
@@ -91,7 +128,7 @@
 
 | 設定 | 預設值 | 說明 |
 |---|---|---|
-| LLM 模型 | `qwen3:1.7b` | 用於生成 description 的模型（從 Ollama 自動列出，過濾非 embedding 模型） |
+| LLM 模型 | `qwen3:1.7b` | 用於生成 description 的模型 |
 | 最短 description 字數 | 30 | 低於此字數視為品質不足，將重新生成 |
 
 </details>
@@ -129,10 +166,11 @@
                                   └──────────────┘
 ```
 
-1. **建立索引** — 筆記內容（title + tags + body 或 description）→ embedding 模型 → 向量存在本地
-2. **搜尋** — 查詢 → 同一模型 → 餘弦相似度 → 排序顯示
-3. **Hot/Cold** — 有連結或近期建立 = hot（預設搜尋）；孤立 = cold（`--all` 才搜）
-4. **Description** — 本地 LLM 彙整筆記 → 存入 frontmatter → 優先用於 embedding，提升長文搜尋品質
+1. **建立索引** — 筆記內容（或 description）→ embedding 模型 → 向量存在本地
+2. **搜尋** — 查詢（+ 同義詞擴展）→ 同一模型 → 餘弦相似度 → 排序顯示
+3. **Hot/Cold** — 有連結或近期建立 = hot（預設搜尋）；孤立 = cold（可選）
+4. **Chunking** — 長文切成重疊片段，各自 embed，搜尋取最高分 chunk
+5. **Description** — 本地 LLM 彙整筆記 → 存入 frontmatter → 優先用於 embedding
 
 ## 推薦模型
 
