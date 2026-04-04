@@ -94,7 +94,20 @@ Most users don't need chunking, but power users can adjust as needed.
 2. Click **Rebuild** to index your vault
 3. **Cmd/Ctrl+P → "Semantic search"** or click the ribbon icon
 
-> Tip: For the best experience with long notes, run **Generate descriptions (preview)** first to create frontmatter summaries, then rebuild the index.
+### Recommended Workflow
+
+For the best search quality, follow this order:
+
+```
+1. Generate descriptions  →  2. Rebuild index  →  3. Search
+   (LLM summarizes notes)    (embed with descriptions)   (enjoy better results)
+```
+
+**Why this order?** The indexer uses frontmatter `description` preferentially for embedding. If you generate descriptions first, the index captures high-quality summaries instead of raw content — resulting in noticeably better search relevance, especially for long notes.
+
+- **Minimal setup**: Skip step 1, just Rebuild and search. Works fine for short notes.
+- **Best quality**: Run **Generate descriptions (preview)** → review the report → **Apply descriptions** → then **Rebuild index**.
+- **With chunking**: Use "Smart" mode — notes with descriptions use the description for embedding; notes without get chunked automatically.
 
 ## Settings
 

@@ -95,7 +95,20 @@
 2. 按 **重建** 建立索引
 3. **Cmd/Ctrl+P → 「Vault Search: 語意搜尋」** 或點左側 ribbon icon
 
-> 提示：如果有長筆記，建議先跑「生成 description（預覽）」產生摘要，再重建索引，搜尋品質會更好。
+### 推薦工作流
+
+要獲得最佳搜尋品質，建議按這個順序操作：
+
+```
+1. 生成 Description  →  2. 重建索引  →  3. 搜尋
+   （LLM 彙整摘要）      （用 description embed）   （享受更好的結果）
+```
+
+**為什麼順序重要？** Indexer 會優先使用 frontmatter `description` 來做 embedding。先生成 description 再建索引，embedding 捕捉到的是高品質摘要而非原始內容，搜尋相關性會明顯提升，尤其是長筆記。
+
+- **最簡模式**：跳過步驟 1，直接 Rebuild + 搜尋。短筆記效果就很好。
+- **最佳品質**：先跑「生成 description（預覽）」→ 看報告 → 「套用 description」→ 再「重建索引」。
+- **搭配 Chunking**：用「智慧」模式 — 有 description 的筆記用摘要 embed，沒有的自動 chunk。
 
 ## 設定
 
