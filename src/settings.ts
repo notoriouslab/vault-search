@@ -20,7 +20,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
         // ============================
         containerEl.createEl("h2", { text: t.sectionSearch });
 
-        new Setting(containerEl)
+        const urlSetting = new Setting(containerEl)
             .setName(t.ollamaUrl)
             .setDesc(t.ollamaUrlDesc)
             .addText(text => {
@@ -29,8 +29,10 @@ export class VaultSearchSettingTab extends PluginSettingTab {
                 text.onChange(async (val) => {
                     this.plugin.settings.ollamaUrl = val.trim();
                     await this.plugin.saveSettings();
+                    this.updateRemoteWarning(urlSetting, val.trim());
                 });
             });
+        this.updateRemoteWarning(urlSetting, this.plugin.settings.ollamaUrl);
 
         new Setting(containerEl)
             .setName(t.apiFormat)
@@ -41,6 +43,19 @@ export class VaultSearchSettingTab extends PluginSettingTab {
                 drop.setValue(this.plugin.settings.apiFormat);
                 drop.onChange(async (val) => {
                     this.plugin.settings.apiFormat = val as "ollama" | "openai";
+                    await this.plugin.saveSettings();
+                });
+            });
+
+        new Setting(containerEl)
+            .setName("API Key")
+            .setDesc("Optional — for OpenAI-compatible servers that require authentication")
+            .addText(text => {
+                text.setPlaceholder("sk-...");
+                text.setValue(this.plugin.settings.apiKey);
+                text.inputEl.type = "password";
+                text.onChange(async (val) => {
+                    this.plugin.settings.apiKey = val.trim();
                     await this.plugin.saveSettings();
                 });
             });
@@ -303,6 +318,22 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             drop.onChange(onChange);
             drop.selectEl.dataset.modelDropdown = filterType ?? "all";
         });
+    }
+
+    private updateRemoteWarning(setting: Setting, url: string) {
+        const existing = setting.settingEl.querySelector(".vault-search-remote-warn");
+        if (existing) existing.remove();
+        try {
+            const parsed = new URL(url);
+            const isLocal = ["localhost", "127.0.0.1", "0.0.0.0", "::1"].includes(parsed.hostname);
+            if (!isLocal) {
+                const warn = setting.settingEl.createDiv({ cls: "vault-search-remote-warn" });
+                warn.setText("⚠ Remote server — note content will be sent outside your machine");
+                warn.style.color = "var(--text-error)";
+                warn.style.fontSize = "0.85em";
+                warn.style.marginTop = "4px";
+            }
+        } catch { /* invalid URL, ignore */ }
     }
 
     private async loadModelOptions() {

@@ -90,7 +90,7 @@ export class SearchView extends ItemView {
             const queryVec = await embedText(
                 expandQuery(query, this.plugin.settings),
                 ollamaUrl, ollamaModel, this.plugin.settings.apiFormat,
-                this.abortController.signal,
+                this.abortController.signal, this.plugin.settings.apiKey,
             );
             if (!queryVec || queryVec.length === 0) return;
 

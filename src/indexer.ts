@@ -232,7 +232,7 @@ export class Indexer {
         const { ollamaUrl, ollamaModel, apiFormat } = this.plugin.settings;
         return Promise.all(texts.map(async (text) => {
             try {
-                return await embedText(text, ollamaUrl, ollamaModel, apiFormat);
+                return await embedText(text, ollamaUrl, ollamaModel, apiFormat, undefined, this.plugin.settings.apiKey);
             } catch (e) {
                 console.warn("Vault Search: embed failed", e);
                 return [];

@@ -49,21 +49,32 @@ export function stripFrontmatter(content: string): string {
     return content.slice(end + 3).trim();
 }
 
+function buildHeaders(apiKey?: string): Record<string, string> {
+    const headers: Record<string, string> = { "Content-Type": "application/json" };
+    if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+    return headers;
+}
+
+function truncateError(text: string, max = 200): string {
+    return text.length > max ? text.slice(0, max) + "..." : text;
+}
+
 export async function embedText(
     text: string,
     url: string,
     model: string,
     format: ApiFormat,
     signal?: AbortSignal,
+    apiKey?: string,
 ): Promise<number[]> {
     if (format === "openai") {
         const resp = await fetch(`${url}/v1/embeddings`, {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: buildHeaders(apiKey),
             body: JSON.stringify({ model, input: text }),
             signal,
         });
-        if (!resp.ok) throw new Error(`API ${resp.status}: ${await resp.text()}`);
+        if (!resp.ok) throw new Error(`API ${resp.status}: ${truncateError(await resp.text())}`);
         const data = await resp.json();
         return data.data?.[0]?.embedding ?? [];
     }
@@ -71,11 +82,11 @@ export async function embedText(
     // Ollama format
     const resp = await fetch(`${url}/api/embed`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: buildHeaders(apiKey),
         body: JSON.stringify({ model, input: text }),
         signal,
     });
-    if (!resp.ok) throw new Error(`Ollama ${resp.status}: ${await resp.text()}`);
+    if (!resp.ok) throw new Error(`Ollama ${resp.status}: ${truncateError(await resp.text())}`);
     const data = await resp.json();
     return data.embeddings?.[0] ?? [];
 }

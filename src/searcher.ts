@@ -87,7 +87,7 @@ export class SearchModal extends SuggestModal<SearchResult> {
             const queryVec = await embedText(
                 expandQuery(query, this.plugin.settings),
                 ollamaUrl, ollamaModel, this.plugin.settings.apiFormat,
-                this.abortController.signal,
+                this.abortController.signal, this.plugin.settings.apiKey,
             );
             if (!queryVec || queryVec.length === 0 || query !== this.lastQuery) return;
 

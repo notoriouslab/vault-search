@@ -8,6 +8,7 @@ export interface VaultSearchSettings {
     ollamaUrl: string;
     ollamaModel: string;
     apiFormat: ApiFormat;
+    apiKey: string;
     topResults: number;
     minScore: number;
     maxEmbedChars: number;
@@ -24,6 +25,7 @@ export const DEFAULT_SETTINGS: VaultSearchSettings = {
     ollamaUrl: "http://localhost:11434",
     ollamaModel: "qwen3-embedding:0.6b",
     apiFormat: "ollama" as ApiFormat,
+    apiKey: "",
     topResults: 10,
     minScore: 0.5,
     maxEmbedChars: 2000,
