@@ -3,7 +3,7 @@
   "name": "Vault Search",
   "version": "0.2.0",
   "minAppVersion": "1.0.0",
-  "description": "Semantic search for your vault using local Ollama embeddings",
+  "description": "Semantic search for your vault using local Ollama embeddings.",
   "author": "Jacob Mei",
   "authorUrl": "https://github.com/notoriouslab",
   "isDesktopOnly": true
