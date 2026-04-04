@@ -1,4 +1,4 @@
-import { ItemView, WorkspaceLeaf } from "obsidian";
+import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
 import type VaultSearchPlugin from "./main";
 import { SearchResult } from "./types";
 import { checkOllama, embedText, rankNotes, renderResultItem } from "./utils";
@@ -111,8 +111,8 @@ export class SearchView extends ItemView {
             const item = this.resultsEl.createDiv({ cls: "vault-search-result-item" });
             item.addEventListener("click", () => {
                 const file = this.app.vault.getAbstractFileByPath(result.path);
-                if (file) {
-                    this.app.workspace.getLeaf(false).openFile(file as import("obsidian").TFile);
+                if (file instanceof TFile) {
+                    this.app.workspace.getLeaf(false).openFile(file);
                 }
             });
             renderResultItem(item, result, this.app);

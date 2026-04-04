@@ -1,4 +1,4 @@
-import { SuggestModal } from "obsidian";
+import { SuggestModal, TFile } from "obsidian";
 import type VaultSearchPlugin from "./main";
 import { SearchResult } from "./types";
 import { checkOllama, embedText, rankNotes, renderResultItem } from "./utils";

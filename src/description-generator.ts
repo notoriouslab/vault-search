@@ -1,9 +1,9 @@
 import { Notice, TFile } from "obsidian";
 import type VaultSearchPlugin from "./main";
 import { checkOllama, stripFrontmatter } from "./utils";
+import { t } from "./i18n";
 
 const LLM_TIMEOUT_MS = 60000;
-import { t } from "./i18n";
 
 interface DescAction {
     path: string;
