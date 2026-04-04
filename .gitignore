@@ -1,0 +1,15 @@
+# Spectra app data
+.spectra/
+
+# Build output
+main.js
+*.js.map
+
+# Dependencies
+node_modules/
+
+# Obsidian plugin data
+data.json
+
+# Dev
+.hotreload

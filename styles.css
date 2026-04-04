@@ -1,0 +1,108 @@
+/* Shared styles (modal + sidebar) */
+.vault-search-title-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.vault-search-title {
+    font-weight: 600;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.vault-search-score {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.vault-search-meta {
+    display: flex;
+    gap: 12px;
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-top: 2px;
+}
+
+.vault-search-tags {
+    color: var(--text-accent);
+}
+
+.vault-search-folder {
+    color: var(--text-faint);
+}
+
+.vault-search-desc {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-top: 2px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+/* Sidebar panel */
+.vault-search-panel {
+    padding: 8px;
+}
+
+.vault-search-bar {
+    margin-bottom: 8px;
+}
+
+.vault-search-input {
+    width: 100%;
+    padding: 6px 10px;
+    border: 1px solid var(--background-modifier-border);
+    border-radius: 4px;
+    background: var(--background-primary);
+    color: var(--text-normal);
+    font-size: 14px;
+}
+
+.vault-search-input:focus {
+    border-color: var(--interactive-accent);
+    outline: none;
+}
+
+.vault-search-status {
+    font-size: 0.85em;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+}
+
+.vault-search-results {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.vault-search-result-item {
+    padding: 8px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.vault-search-result-item:hover {
+    background: var(--background-modifier-hover);
+}
+
+/* Settings stats */
+.vault-search-stats {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    padding: 6px 12px;
+    background: var(--background-secondary);
+    border-radius: 6px;
+    line-height: 1.6;
+}
+
+.vault-search-stats p {
+    margin: 0;
+}
