@@ -151,7 +151,7 @@ export class Indexer {
                 } catch (e) {
                     console.warn(`Vault Search: chunking failed for ${file.path}`, e);
                 }
-                progress.setMessage(`Chunking: ${i + 1}/${toChunk.length}...`);
+                progress.setMessage(t.chunkingProgress(i + 1, toChunk.length));
             }
         }
 

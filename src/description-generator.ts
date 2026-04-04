@@ -81,7 +81,7 @@ export class DescriptionGenerator {
         }
 
         if (toProcess.length === 0) {
-            new Notice("All notes already have good descriptions");
+            new Notice(t.descAllGood);
             return;
         }
 
@@ -161,7 +161,7 @@ export class DescriptionGenerator {
         const entries = this.parseReport(reportContent);
 
         if (entries.length === 0) {
-            new Notice("No entries to apply");
+            new Notice(t.descNoEntries);
             return;
         }
 
@@ -202,7 +202,7 @@ export class DescriptionGenerator {
                 console.warn(`Vault Search: failed to apply ${entry.path}`, e);
             }
 
-            progress.setMessage(`Applying: ${i + 1}/${entries.length}...`);
+            progress.setMessage(t.descApplying(i + 1, entries.length));
         }
 
         progress.hide();
@@ -261,25 +261,28 @@ ${content}`;
         }
 
         const data = await resp.json();
-        const text = data.message?.content ?? "";
+        const raw = data.message?.content ?? "";
+        return this.parseGeneratedJSON(raw);
+    }
 
-        try {
-            const parsed = JSON.parse(text);
-            // Handle inconsistent key names (summary vs description)
-            const desc = parsed.description ?? parsed.summary ?? "";
-            const tags = Array.isArray(parsed.tags) ? parsed.tags.map(String).map((t: string) => t.replace(/\s+/g, "_")).filter((t: string) => t !== "..." && t !== "..." && t.length > 0) : undefined;
-            return { description: desc, tags };
-        } catch {
-            const cleaned = text.replace(/```json\n?|\n?```/g, "").trim();
+    private parseGeneratedJSON(raw: string): { description: string; tags?: string[] } {
+        const tryParse = (text: string): { description: string; tags?: string[] } | null => {
             try {
-                const parsed = JSON.parse(cleaned);
+                const parsed = JSON.parse(text);
                 const desc = parsed.description ?? parsed.summary ?? "";
-                const tags = Array.isArray(parsed.tags) ? parsed.tags.map(String).map((t: string) => t.replace(/\s+/g, "_")).filter((t: string) => t !== "..." && t !== "..." && t.length > 0) : undefined;
+                const tags = Array.isArray(parsed.tags)
+                    ? parsed.tags
+                        .map(String)
+                        .map((t: string) => t.replace(/\s+/g, "_"))
+                        .filter((t: string) => t !== "..." && t !== "\u2026" && t.length > 0)
+                    : undefined;
                 return { description: desc, tags };
-            } catch {
-                return { description: cleaned.slice(0, 200) };
-            }
-        }
+            } catch { return null; }
+        };
+
+        return tryParse(raw)
+            ?? tryParse(raw.replace(/```json\n?|\n?```/g, "").trim())
+            ?? { description: raw.slice(0, 200) };
     }
 
     private async writeReport(actions: DescAction[]) {

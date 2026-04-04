@@ -133,6 +133,49 @@ export function searchNoteScore(queryVec: number[], entry: import("./types").Not
     return cosineSimilarity(queryVec, entry.embedding);
 }
 
+export function rankNotes(
+    queryVec: number[],
+    index: import("./types").VaultSearchIndex,
+    settings: { searchScope: string; minScore: number; topResults: number },
+): import("./types").SearchResult[] {
+    const results: import("./types").SearchResult[] = [];
+    for (const [path, entry] of Object.entries(index.notes)) {
+        if (settings.searchScope === "hot" && entry.tier !== "hot") continue;
+        const score = searchNoteScore(queryVec, entry);
+        if (score >= settings.minScore) {
+            results.push({ path, title: entry.title, tags: entry.tags, score, tier: entry.tier });
+        }
+    }
+    results.sort((a, b) => b.score - a.score);
+    return results.slice(0, settings.topResults);
+}
+
+export function renderResultItem(
+    container: HTMLElement,
+    result: import("./types").SearchResult,
+    app: import("obsidian").App,
+) {
+    const titleRow = container.createDiv({ cls: "vault-search-title-row" });
+    titleRow.createSpan({ text: result.title, cls: "vault-search-title" });
+    titleRow.createSpan({ text: result.score.toFixed(3), cls: "vault-search-score" });
+
+    const file = app.vault.getAbstractFileByPath(result.path);
+    if (file instanceof TFile) {
+        getContentPreview(app, file).then(preview => {
+            if (preview) container.createDiv({ text: preview, cls: "vault-search-desc" });
+        });
+    }
+
+    const metaRow = container.createDiv({ cls: "vault-search-meta" });
+    if (result.tags.length > 0) {
+        metaRow.createSpan({ text: result.tags.join(", "), cls: "vault-search-tags" });
+    }
+    const folder = result.path.substring(0, result.path.lastIndexOf("/"));
+    if (folder) {
+        metaRow.createSpan({ text: folder, cls: "vault-search-folder" });
+    }
+}
+
 export async function getContentPreview(app: App, file: TFile, maxChars = 100): Promise<string> {
     const cache = app.metadataCache.getFileCache(file);
     const desc = cache?.frontmatter?.description;

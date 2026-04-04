@@ -1,7 +1,7 @@
-import { ItemView, TFile, WorkspaceLeaf } from "obsidian";
+import { ItemView, WorkspaceLeaf } from "obsidian";
 import type VaultSearchPlugin from "./main";
 import { SearchResult } from "./types";
-import { checkOllama, embedText, getContentPreview, searchNoteScore } from "./utils";
+import { checkOllama, embedText, rankNotes, renderResultItem } from "./utils";
 import { t } from "./i18n";
 import { expandQuery } from "./synonyms";
 
@@ -80,7 +80,7 @@ export class SearchView extends ItemView {
             return;
         }
 
-        const { ollamaUrl, ollamaModel, searchScope, minScore, topResults } = this.plugin.settings;
+        const { ollamaUrl, ollamaModel } = this.plugin.settings;
 
         try {
             if (!await checkOllama(ollamaUrl)) {
@@ -94,17 +94,7 @@ export class SearchView extends ItemView {
             );
             if (!queryVec || queryVec.length === 0) return;
 
-            const results: SearchResult[] = [];
-            for (const [path, entry] of Object.entries(this.plugin.index.notes)) {
-                if (searchScope === "hot" && entry.tier !== "hot") continue;
-                const score = searchNoteScore(queryVec, entry);
-                if (score >= minScore) {
-                    results.push({ path, title: entry.title, tags: entry.tags, score, tier: entry.tier });
-                }
-            }
-
-            results.sort((a, b) => b.score - a.score);
-            this.lastResults = results.slice(0, topResults);
+            this.lastResults = rankNotes(queryVec, this.plugin.index, this.plugin.settings);
             this.renderResults();
             this.statusEl.setText(t.searchResults(this.lastResults.length));
         } catch (e) {
@@ -121,30 +111,11 @@ export class SearchView extends ItemView {
             const item = this.resultsEl.createDiv({ cls: "vault-search-result-item" });
             item.addEventListener("click", () => {
                 const file = this.app.vault.getAbstractFileByPath(result.path);
-                if (file instanceof TFile) {
-                    this.app.workspace.getLeaf(false).openFile(file);
+                if (file) {
+                    this.app.workspace.getLeaf(false).openFile(file as import("obsidian").TFile);
                 }
             });
-
-            const titleRow = item.createDiv({ cls: "vault-search-title-row" });
-            titleRow.createSpan({ text: result.title, cls: "vault-search-title" });
-            titleRow.createSpan({ text: result.score.toFixed(3), cls: "vault-search-score" });
-
-            const file = this.app.vault.getAbstractFileByPath(result.path);
-            if (file instanceof TFile) {
-                getContentPreview(this.app, file).then(preview => {
-                    if (preview) item.createDiv({ text: preview, cls: "vault-search-desc" });
-                });
-            }
-
-            const metaRow = item.createDiv({ cls: "vault-search-meta" });
-            if (result.tags.length > 0) {
-                metaRow.createSpan({ text: result.tags.join(", "), cls: "vault-search-tags" });
-            }
-            const folder = result.path.substring(0, result.path.lastIndexOf("/"));
-            if (folder) {
-                metaRow.createSpan({ text: folder, cls: "vault-search-folder" });
-            }
+            renderResultItem(item, result, this.app);
         }
     }
 }

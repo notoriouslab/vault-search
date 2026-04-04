@@ -48,8 +48,8 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             });
 
         new Setting(containerEl)
-            .setName("API Key")
-            .setDesc("Optional — for OpenAI-compatible servers that require authentication")
+            .setName(t.apiKeyLabel)
+            .setDesc(t.apiKeyDesc)
             .addText(text => {
                 text.setPlaceholder("sk-...");
                 text.setValue(this.plugin.settings.apiKey);

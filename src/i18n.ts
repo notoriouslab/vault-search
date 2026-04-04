@@ -77,6 +77,12 @@ export interface Locale {
     descApplyDone: (n: number) => string;
     descNoReport: string;
     descGenerating: (done: number, total: number) => string;
+    descAllGood: string;
+    descNoEntries: string;
+    descApplying: (done: number, total: number) => string;
+    chunkingProgress: (done: number, total: number) => string;
+    apiKeyLabel: string;
+    apiKeyDesc: string;
     // Settings sections
     sectionSearch: string;
     sectionDesc: string;
@@ -174,6 +180,12 @@ const en: Locale = {
     descApplyDone: (n) => `Applied descriptions to ${n} notes`,
     descNoReport: "No preview report found. Run 'Generate descriptions (preview)' first.",
     descGenerating: (done, total) => `Generating descriptions: ${done}/${total}...`,
+    descAllGood: "All notes already have good descriptions",
+    descNoEntries: "No entries to apply",
+    descApplying: (done, total) => `Applying: ${done}/${total}...`,
+    chunkingProgress: (done, total) => `Chunking: ${done}/${total}...`,
+    apiKeyLabel: "API Key",
+    apiKeyDesc: "Optional — for servers that require authentication",
     sectionSearch: "Search & Index",
     sectionDesc: "Description Generator",
     descStats: "Description stats",
@@ -273,6 +285,12 @@ const zhTW: Locale = {
     descApplyDone: (n) => `已套用 ${n} 篇 description`,
     descNoReport: "找不到預覽報告，請先執行「生成 description（預覽）」",
     descGenerating: (done, total) => `生成 description：${done}/${total}...`,
+    descAllGood: "所有筆記都已有完整 description",
+    descNoEntries: "沒有需要套用的項目",
+    descApplying: (done, total) => `套用中：${done}/${total}...`,
+    chunkingProgress: (done, total) => `Chunking：${done}/${total}...`,
+    apiKeyLabel: "API Key",
+    apiKeyDesc: "選填 — 用於需要認證的伺服器",
     sectionSearch: "搜尋與索引",
     sectionDesc: "Description 生成器",
     descStats: "Description 統計",
