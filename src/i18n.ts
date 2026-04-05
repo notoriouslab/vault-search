@@ -83,6 +83,10 @@ export interface Locale {
     chunkingProgress: (done: number, total: number) => string;
     apiKeyLabel: string;
     apiKeyDesc: string;
+    urlPlaceholder: string;
+    apiKeyPlaceholder: string;
+    remoteWarning: string;
+    selectModel: string;
     // Settings sections
     sectionSearch: string;
     sectionDesc: string;
@@ -186,6 +190,10 @@ const en: Locale = {
     chunkingProgress: (done, total) => `Chunking: ${done}/${total}...`,
     apiKeyLabel: "API key",
     apiKeyDesc: "Optional — for servers that require authentication",
+    urlPlaceholder: "http://localhost:11434",
+    apiKeyPlaceholder: "sk-...",
+    remoteWarning: "\u26a0 Remote server — note content will be sent outside your machine",
+    selectModel: "Select a model",
     sectionSearch: "Search & index",
     sectionDesc: "Description generator",
     descStats: "Description stats",
@@ -291,6 +299,10 @@ const zhTW: Locale = {
     chunkingProgress: (done, total) => `Chunking：${done}/${total}...`,
     apiKeyLabel: "API key",
     apiKeyDesc: "選填 — 用於需要認證的伺服器",
+    urlPlaceholder: "http://localhost:11434",
+    apiKeyPlaceholder: "sk-...",
+    remoteWarning: "\u26a0 遠端伺服器 — 筆記內容將傳送至外部機器",
+    selectModel: "選擇模型",
     sectionSearch: "搜尋與索引",
     sectionDesc: "Description 生成器",
     descStats: "Description 統計",

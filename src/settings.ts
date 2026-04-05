@@ -22,7 +22,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             .setName(t.ollamaUrl)
             .setDesc(t.ollamaUrlDesc)
             .addText(text => {
-                text.setPlaceholder("http://localhost:11434");
+                text.setPlaceholder(t.urlPlaceholder);
                 text.setValue(this.plugin.settings.ollamaUrl);
                 text.onChange(async (val) => {
                     this.plugin.settings.ollamaUrl = val.trim();
@@ -49,7 +49,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             .setName(t.apiKeyLabel)
             .setDesc(t.apiKeyDesc)
             .addText(text => {
-                text.setPlaceholder("sk-...");
+                text.setPlaceholder(t.apiKeyPlaceholder);
                 text.setValue(this.plugin.settings.apiKey);
                 text.inputEl.type = "password";
                 text.onChange(async (val) => {
@@ -367,7 +367,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             const isLocal = ["localhost", "127.0.0.1", "0.0.0.0", "::1"].includes(parsed.hostname);
             if (!isLocal) {
                 const warn = setting.settingEl.createDiv({ cls: "vault-search-remote-warn" });
-                warn.setText("⚠ Remote server — note content will be sent outside your machine");
+                warn.setText(t.remoteWarning);
             }
         } catch { /* invalid URL, ignore */ }
     }
@@ -383,7 +383,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             const filterType = select.dataset.modelDropdown;
 
             select.empty();
-            select.createEl("option", { value: "", text: "-- Select model --" });
+            select.createEl("option", { value: "", text: t.selectModel });
 
             // Filter: only show relevant models
             const filtered = models.filter(m => {
