@@ -13,7 +13,7 @@ export class SearchView extends ItemView {
     private resultsEl!: HTMLDivElement;
     private statusEl!: HTMLDivElement;
     private debounceTimer: ReturnType<typeof setTimeout> | null = null;
-    private abortController: AbortController | null = null;
+    private currentQuery = "";
     private lastResults: SearchResult[] = [];
 
     constructor(leaf: WorkspaceLeaf, plugin: VaultSearchPlugin) {
@@ -22,10 +22,11 @@ export class SearchView extends ItemView {
     }
 
     getViewType() { return VIEW_TYPE_SEARCH; }
-    getDisplayText() { return "Vault Search"; }
+    getDisplayText() { return "Vault search"; }
     getIcon() { return "search"; }
 
     async onOpen() {
+        await super.onOpen();
         const container = this.containerEl.children[1];
         container.empty();
         container.addClass("vault-search-panel");
@@ -56,7 +57,7 @@ export class SearchView extends ItemView {
     }
 
     async onClose() {
-        if (this.abortController) this.abortController.abort();
+        await super.onClose();
         if (this.debounceTimer) clearTimeout(this.debounceTimer);
     }
 
@@ -68,12 +69,11 @@ export class SearchView extends ItemView {
             return;
         }
         this.statusEl.setText(t.searching);
-        this.debounceTimer = setTimeout(() => this.executeSearch(query), 300);
+        this.debounceTimer = setTimeout(() => { void this.executeSearch(query); }, 300);
     }
 
     private async executeSearch(query: string) {
-        if (this.abortController) this.abortController.abort();
-        this.abortController = new AbortController();
+        this.currentQuery = query;
 
         if (!this.plugin.index) {
             this.statusEl.setText(t.indexEmpty);
@@ -87,21 +87,20 @@ export class SearchView extends ItemView {
                 this.statusEl.setText(t.ollamaNotReady);
                 return;
             }
+            if (query !== this.currentQuery) return;
             const queryVec = await embedText(
                 expandQuery(query, this.plugin.settings),
                 ollamaUrl, ollamaModel, this.plugin.settings.apiFormat,
-                this.abortController.signal, this.plugin.settings.apiKey,
+                this.plugin.settings.apiKey,
             );
-            if (!queryVec || queryVec.length === 0) return;
+            if (!queryVec || queryVec.length === 0 || query !== this.currentQuery) return;
 
             this.lastResults = rankNotes(queryVec, this.plugin.index, this.plugin.settings);
             this.renderResults();
             this.statusEl.setText(t.searchResults(this.lastResults.length));
         } catch (e) {
-            if ((e as Error).name !== "AbortError") {
-                this.statusEl.setText(t.searchFailed);
-                console.error("Vault Search:", e);
-            }
+            this.statusEl.setText(t.searchFailed);
+            console.error("Vault Search:", e);
         }
     }
 
@@ -112,7 +111,7 @@ export class SearchView extends ItemView {
             item.addEventListener("click", () => {
                 const file = this.app.vault.getAbstractFileByPath(result.path);
                 if (file instanceof TFile) {
-                    this.app.workspace.getLeaf(false).openFile(file);
+                    void this.app.workspace.getLeaf(false).openFile(file);
                 }
             });
             renderResultItem(item, result, this.app);

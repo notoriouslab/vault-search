@@ -10,6 +10,8 @@ export class Indexer {
     constructor(private plugin: VaultSearchPlugin) {}
 
     shouldExclude(path: string): boolean {
+        const configDir = this.plugin.app.vault.configDir;
+        if (path.startsWith(configDir + "/") || path === configDir) return true;
         return this.plugin.settings.excludePatterns.some(p => path.includes(p));
     }
 
@@ -170,7 +172,7 @@ export class Indexer {
         const hotCount = Object.values(notes).filter(n => n.tier === "hot").length;
         const coldCount = Object.values(notes).filter(n => n.tier === "cold").length;
         new Notice(t.noticeIndexDone(Object.keys(notes).length, hotCount, coldCount, failed), 10000);
-        console.log(`Vault Search: rebuild complete — ${Object.keys(notes).length} notes, ${failed} failed`);
+        console.debug(`Vault Search: rebuild complete — ${Object.keys(notes).length} notes, ${failed} failed`);
     }
 
     async update() {
@@ -274,13 +276,13 @@ export class Indexer {
     private async embedBatch(texts: string[]): Promise<number[][]> {
         const { ollamaUrl, ollamaModel, apiFormat, apiKey } = this.plugin.settings;
         try {
-            return await embedTexts(texts, ollamaUrl, ollamaModel, apiFormat, undefined, apiKey);
+            return await embedTexts(texts, ollamaUrl, ollamaModel, apiFormat, apiKey);
         } catch (e) {
             console.warn("Vault Search: batch embed failed, falling back to individual", e);
             // Fallback: embed one by one so partial failures don't lose everything
             return Promise.all(texts.map(async (text) => {
                 try {
-                    const [emb] = await embedTexts([text], ollamaUrl, ollamaModel, apiFormat, undefined, apiKey);
+                    const [emb] = await embedTexts([text], ollamaUrl, ollamaModel, apiFormat, apiKey);
                     return emb ?? [];
                 } catch { return []; }
             }));

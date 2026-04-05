@@ -1,4 +1,4 @@
-import { App, TFile } from "obsidian";
+import { App, requestUrl, TFile } from "obsidian";
 import type { ApiFormat } from "./types";
 
 export interface OllamaModel {
@@ -9,9 +9,9 @@ export interface OllamaModel {
 
 export async function fetchOllamaModels(url: string): Promise<OllamaModel[]> {
     try {
-        const resp = await fetch(`${url}/api/tags`, { signal: AbortSignal.timeout(3000) });
-        if (!resp.ok) return [];
-        const data = await resp.json();
+        const resp = await requestUrl({ url: `${url}/api/tags`, throw: false });
+        if (resp.status !== 200) return [];
+        const data = resp.json;
         return (data.models ?? []).map((m: { name: string; size: number }) => ({
             name: m.name,
             sizeGB: m.size / 1e9,
@@ -24,8 +24,8 @@ export async function fetchOllamaModels(url: string): Promise<OllamaModel[]> {
 
 export async function checkOllama(url: string): Promise<boolean> {
     try {
-        const resp = await fetch(url, { signal: AbortSignal.timeout(3000) });
-        return resp.ok;
+        const resp = await requestUrl({ url, throw: false });
+        return resp.status === 200;
     } catch {
         return false;
     }
@@ -64,10 +64,9 @@ export async function embedText(
     url: string,
     model: string,
     format: ApiFormat,
-    signal?: AbortSignal,
     apiKey?: string,
 ): Promise<number[]> {
-    const results = await embedTexts([text], url, model, format, signal, apiKey);
+    const results = await embedTexts([text], url, model, format, apiKey);
     return results[0] ?? [];
 }
 
@@ -76,20 +75,20 @@ export async function embedTexts(
     url: string,
     model: string,
     format: ApiFormat,
-    signal?: AbortSignal,
     apiKey?: string,
 ): Promise<number[][]> {
     if (texts.length === 0) return [];
 
     if (format === "openai") {
-        const resp = await fetch(`${url}/v1/embeddings`, {
+        const resp = await requestUrl({
+            url: `${url}/v1/embeddings`,
             method: "POST",
             headers: buildHeaders(apiKey),
             body: JSON.stringify({ model, input: texts }),
-            signal,
+            throw: false,
         });
-        if (!resp.ok) throw new Error(`API ${resp.status}: ${truncateError(await resp.text())}`);
-        const data = await resp.json();
+        if (resp.status !== 200) throw new Error(`API ${resp.status}: ${truncateError(resp.text)}`);
+        const data = resp.json;
         // OpenAI returns {data: [{embedding: [...]}, ...]} sorted by index
         return (data.data ?? [])
             .sort((a: {index: number}, b: {index: number}) => a.index - b.index)
@@ -97,14 +96,15 @@ export async function embedTexts(
     }
 
     // Ollama format — supports input as string[]
-    const resp = await fetch(`${url}/api/embed`, {
+    const resp = await requestUrl({
+        url: `${url}/api/embed`,
         method: "POST",
         headers: buildHeaders(apiKey),
         body: JSON.stringify({ model, input: texts }),
-        signal,
+        throw: false,
     });
-    if (!resp.ok) throw new Error(`Ollama ${resp.status}: ${truncateError(await resp.text())}`);
-    const data = await resp.json();
+    if (resp.status !== 200) throw new Error(`Ollama ${resp.status}: ${truncateError(resp.text)}`);
+    const data = resp.json;
     return data.embeddings ?? [];
 }
 
@@ -161,7 +161,7 @@ export function renderResultItem(
 
     const file = app.vault.getAbstractFileByPath(result.path);
     if (file instanceof TFile) {
-        getContentPreview(app, file).then(preview => {
+        void getContentPreview(app, file).then(preview => {
             if (preview) container.createDiv({ text: preview, cls: "vault-search-desc" });
         });
     }

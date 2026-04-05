@@ -35,7 +35,7 @@ export const DEFAULT_SETTINGS: VaultSearchSettings = {
     maxEmbedChars: 2000,
     hotDays: 90,
     searchScope: "hot",
-    excludePatterns: ["_templates/", "templates/", ".trash/", ".obsidian/", "_description_report.md"],
+    excludePatterns: ["_templates/", "templates/", ".trash/", "_description_report.md"],
     autoIndex: true,
     synonyms: {},
     llmModel: "qwen3:1.7b",

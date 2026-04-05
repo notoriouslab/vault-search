@@ -184,10 +184,10 @@ const en: Locale = {
     descNoEntries: "No entries to apply",
     descApplying: (done, total) => `Applying: ${done}/${total}...`,
     chunkingProgress: (done, total) => `Chunking: ${done}/${total}...`,
-    apiKeyLabel: "API Key",
+    apiKeyLabel: "API key",
     apiKeyDesc: "Optional — for servers that require authentication",
-    sectionSearch: "Search & Index",
-    sectionDesc: "Description Generator",
+    sectionSearch: "Search & index",
+    sectionDesc: "Description generator",
     descStats: "Description stats",
     descGood: "Good",
     descShort: "Too short",
@@ -289,7 +289,7 @@ const zhTW: Locale = {
     descNoEntries: "沒有需要套用的項目",
     descApplying: (done, total) => `套用中：${done}/${total}...`,
     chunkingProgress: (done, total) => `Chunking：${done}/${total}...`,
-    apiKeyLabel: "API Key",
+    apiKeyLabel: "API key",
     apiKeyDesc: "選填 — 用於需要認證的伺服器",
     sectionSearch: "搜尋與索引",
     sectionDesc: "Description 生成器",
@@ -316,8 +316,8 @@ const zhTW: Locale = {
 const locales: Record<string, Locale> = { en, "zh-TW": zhTW };
 
 export function getLocale(): Locale {
-    // Obsidian stores language in localStorage
-    const lang = localStorage.getItem("language") || "en";
+    // Use moment locale set by Obsidian (avoids direct localStorage access)
+    const lang = window.moment?.locale?.() ?? "en";
     if (lang.startsWith("zh")) return zhTW;
     return locales[lang] ?? en;
 }

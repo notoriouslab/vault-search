@@ -106,3 +106,15 @@
 .vault-search-stats p {
     margin: 0;
 }
+
+/* Settings: synonym textarea */
+.vault-search-synonyms-input {
+    width: 100%;
+}
+
+/* Settings: remote server warning */
+.vault-search-remote-warn {
+    color: var(--text-error);
+    font-size: 0.85em;
+    margin-top: 4px;
+}

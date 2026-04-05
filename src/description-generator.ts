@@ -1,9 +1,7 @@
-import { Notice, TFile } from "obsidian";
+import { Notice, requestUrl, TFile } from "obsidian";
 import type VaultSearchPlugin from "./main";
 import { checkOllama, stripFrontmatter } from "./utils";
 import { t } from "./i18n";
-
-const LLM_TIMEOUT_MS = 60000;
 
 interface DescAction {
     path: string;
@@ -234,12 +232,10 @@ ${content}`;
         const headers: Record<string, string> = { "Content-Type": "application/json" };
         if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
 
-        const abortController = new AbortController();
-        const timer = setTimeout(() => abortController.abort(), LLM_TIMEOUT_MS);
-
-        let resp: Response;
-        try {
-            resp = await fetch(`${url}/api/chat`, {
+        let timer: ReturnType<typeof setTimeout>;
+        const resp = await Promise.race([
+            requestUrl({
+                url: `${url}/api/chat`,
                 method: "POST",
                 headers,
                 body: JSON.stringify({
@@ -249,18 +245,19 @@ ${content}`;
                     format: "json",
                     think: false,
                 }),
-                signal: abortController.signal,
-            });
-        } finally {
-            clearTimeout(timer);
-        }
+                throw: false,
+            }).finally(() => clearTimeout(timer)),
+            new Promise<never>((_, reject) => {
+                timer = setTimeout(() => reject(new Error("LLM timeout (60s)")), 60000);
+            }),
+        ]);
 
-        if (!resp.ok) {
-            const errText = await resp.text();
+        if (resp.status !== 200) {
+            const errText = resp.text;
             throw new Error(`Ollama ${resp.status}: ${errText.length > 200 ? errText.slice(0, 200) + "..." : errText}`);
         }
 
-        const data = await resp.json();
+        const data = resp.json;
         const raw = data.message?.content ?? "";
         return this.parseGeneratedJSON(raw);
     }

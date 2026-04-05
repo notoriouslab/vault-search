@@ -15,10 +15,8 @@ export class VaultSearchSettingTab extends PluginSettingTab {
         const { containerEl } = this;
         containerEl.empty();
 
-        // ============================
         // Section 1: Search & Index
-        // ============================
-        containerEl.createEl("h2", { text: t.sectionSearch });
+        new Setting(containerEl).setName(t.sectionSearch).setHeading();
 
         const urlSetting = new Setting(containerEl)
             .setName(t.ollamaUrl)
@@ -159,7 +157,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
                     .map(([k, v]) => `${k} = ${v.join(", ")}`);
                 text.setValue(lines.join("\n"));
                 text.inputEl.rows = 6;
-                text.inputEl.style.width = "100%";
+                text.inputEl.addClass("vault-search-synonyms-input");
                 text.onChange(async (val) => {
                     const result: Record<string, string[]> = {};
                     for (const line of val.split("\n")) {
@@ -230,7 +228,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             });
 
         // Index actions
-        containerEl.createEl("h3", { text: t.actions });
+        new Setting(containerEl).setName(t.actions).setHeading();
 
         new Setting(containerEl)
             .setName(t.rebuildIndex)
@@ -266,7 +264,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
         // Index stats
         const index = this.plugin.index;
         if (index) {
-            containerEl.createEl("h3", { text: t.indexStats });
+            new Setting(containerEl).setName(t.indexStats).setHeading();
             const stats = containerEl.createDiv({ cls: "vault-search-stats" });
             const notes = Object.values(index.notes);
             const hot = notes.filter(n => n.tier === "hot").length;
@@ -278,10 +276,8 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             stats.createEl("p", { text: `${t.lastIndexed}: ${index.meta.indexedAt}` });
         }
 
-        // ============================
         // Section 2: Description Generator
-        // ============================
-        containerEl.createEl("h2", { text: t.sectionDesc });
+        new Setting(containerEl).setName(t.sectionDesc).setHeading();
 
         const llmSetting = new Setting(containerEl)
             .setName(t.llmModel)
@@ -306,7 +302,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             });
 
         // Description actions
-        containerEl.createEl("h3", { text: t.actions });
+        new Setting(containerEl).setName(t.actions).setHeading();
 
         new Setting(containerEl)
             .setName(t.cmdDescPreview)
@@ -341,7 +337,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
 
         // Description stats
         const descStats = this.plugin.descGenerator.getStats();
-        containerEl.createEl("h3", { text: t.descStats });
+        new Setting(containerEl).setName(t.descStats).setHeading();
         const dStatsEl = containerEl.createDiv({ cls: "vault-search-stats" });
         dStatsEl.createEl("p", { text: `${t.totalNotes}: ${descStats.total}` });
         dStatsEl.createEl("p", { text: `${t.descGood}: ${descStats.good}` });
@@ -350,7 +346,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
         dStatsEl.createEl("p", { text: `${t.descNoFm}: ${descStats.noFrontmatter}` });
 
         // Async: populate model dropdowns
-        this.loadModelOptions();
+        void this.loadModelOptions();
     }
 
     private addModelDropdown(setting: Setting, currentValue: string, onChange: (val: string) => Promise<void>, filterType?: "embedding" | "llm") {
@@ -372,9 +368,6 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             if (!isLocal) {
                 const warn = setting.settingEl.createDiv({ cls: "vault-search-remote-warn" });
                 warn.setText("⚠ Remote server — note content will be sent outside your machine");
-                warn.style.color = "var(--text-error)";
-                warn.style.fontSize = "0.85em";
-                warn.style.marginTop = "4px";
             }
         } catch { /* invalid URL, ignore */ }
     }

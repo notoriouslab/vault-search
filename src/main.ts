@@ -29,8 +29,8 @@ export default class VaultSearchPlugin extends Plugin {
         this.registerView(VIEW_TYPE_SEARCH, (leaf) => new SearchView(leaf, this));
 
         // Ribbon icon to open sidebar
-        this.addRibbonIcon("search", "Vault Search", () => {
-            this.activateView();
+        this.addRibbonIcon("search", "Vault search", () => {
+            void this.activateView();
         });
 
         // Register commands
@@ -59,7 +59,7 @@ export default class VaultSearchPlugin extends Plugin {
                 const file = this.app.workspace.getActiveFile();
                 if (!file || !this.index) return false;
                 if (checking) return true;
-                this.findSimilar(file);
+                void this.findSimilar(file);
                 return true;
             },
         });
@@ -105,14 +105,14 @@ export default class VaultSearchPlugin extends Plugin {
         // Settings tab
         this.addSettingTab(new VaultSearchSettingTab(this.app, this));
 
-        console.log("Vault Search loaded");
+        console.debug("Vault Search loaded");
     }
 
     onunload() {
         for (const timer of this.debounceTimers.values()) {
             clearTimeout(timer);
         }
-        console.log("Vault Search unloaded");
+        console.debug("Vault Search unloaded");
     }
 
     async activateView() {
@@ -126,7 +126,7 @@ export default class VaultSearchPlugin extends Plugin {
             }
         }
         if (leaf) {
-            workspace.revealLeaf(leaf);
+            void workspace.revealLeaf(leaf);
             // Focus the search input
             const view = leaf.view as SearchView;
             if (view.focusInput) view.focusInput();
@@ -189,14 +189,14 @@ export default class VaultSearchPlugin extends Plugin {
 
         this.debounceTimers.set(
             file.path,
-            setTimeout(async () => {
+            setTimeout(() => {
                 this.debounceTimers.delete(file.path);
                 if (type === "delete") {
                     this.indexer.removeFromIndex(file.path);
+                    void this.saveIndex();
                 } else {
-                    await this.indexer.indexSingleFile(file);
+                    void this.indexer.indexSingleFile(file).then(() => this.saveIndex());
                 }
-                await this.saveIndex();
             }, 2000)
         );
     }

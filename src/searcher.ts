@@ -10,7 +10,6 @@ export class SearchModal extends SuggestModal<SearchResult> {
     private lastResults: SearchResult[] = [];
     private lastQuery = "";
     private debounceTimer: ReturnType<typeof setTimeout> | null = null;
-    private abortController: AbortController | null = null;
 
     constructor(app: typeof SuggestModal.prototype.app, plugin: VaultSearchPlugin) {
         super(app);
@@ -43,19 +42,16 @@ export class SearchModal extends SuggestModal<SearchResult> {
     onChooseSuggestion(result: SearchResult) {
         const file = this.app.vault.getAbstractFileByPath(result.path);
         if (file instanceof TFile) {
-            this.app.workspace.getLeaf().openFile(file);
+            void this.app.workspace.getLeaf().openFile(file);
         }
     }
 
     private scheduleSearch(query: string) {
         if (this.debounceTimer) clearTimeout(this.debounceTimer);
-        this.debounceTimer = setTimeout(() => this.executeSearch(query), 300);
+        this.debounceTimer = setTimeout(() => { void this.executeSearch(query); }, 300);
     }
 
     private async executeSearch(query: string) {
-        if (this.abortController) this.abortController.abort();
-        this.abortController = new AbortController();
-
         if (!this.plugin.index) return;
 
         const { ollamaUrl, ollamaModel } = this.plugin.settings;
@@ -65,24 +61,22 @@ export class SearchModal extends SuggestModal<SearchResult> {
                 console.warn("Vault Search:", t.ollamaNotReady);
                 return;
             }
+            if (query !== this.lastQuery) return;
             const queryVec = await embedText(
                 expandQuery(query, this.plugin.settings),
                 ollamaUrl, ollamaModel, this.plugin.settings.apiFormat,
-                this.abortController.signal, this.plugin.settings.apiKey,
+                this.plugin.settings.apiKey,
             );
             if (!queryVec || queryVec.length === 0 || query !== this.lastQuery) return;
 
             this.lastResults = rankNotes(queryVec, this.plugin.index, this.plugin.settings);
             this.inputEl.dispatchEvent(new Event("input"));
         } catch (e) {
-            if ((e as Error).name !== "AbortError") {
-                console.error("Vault Search: search failed", e);
-            }
+            console.error("Vault Search: search failed", e);
         }
     }
 
     onClose() {
-        if (this.abortController) this.abortController.abort();
         if (this.debounceTimer) clearTimeout(this.debounceTimer);
     }
 }
