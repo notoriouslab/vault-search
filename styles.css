@@ -93,6 +93,70 @@
     background: var(--background-modifier-hover);
 }
 
+/* Tier badges */
+.vault-search-tier {
+    font-size: 0.8em;
+    margin-right: 4px;
+    flex-shrink: 0;
+}
+
+.vault-search-result-item.is-cold {
+    border-left: 2px solid var(--text-faint);
+}
+
+/* Tab bar */
+.vault-search-tab-bar {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--background-modifier-border);
+    margin-bottom: 8px;
+}
+
+.vault-search-tab {
+    padding: 6px 12px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    color: var(--text-muted);
+    font-size: 0.9em;
+    user-select: none;
+}
+
+.vault-search-tab:hover {
+    color: var(--text-normal);
+}
+
+.vault-search-tab.is-active {
+    color: var(--text-normal);
+    border-bottom-color: var(--interactive-accent);
+}
+
+/* Discover mode toggle */
+.vault-search-mode-toggle {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.vault-search-mode-btn {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    cursor: pointer;
+    background: var(--background-secondary);
+    color: var(--text-muted);
+    border: none;
+}
+
+.vault-search-mode-btn.is-active {
+    background: var(--interactive-accent);
+    color: var(--text-on-accent);
+}
+
+.vault-search-moc-btn {
+    margin-left: auto;
+    font-size: 0.8em;
+}
+
 /* Settings stats */
 .vault-search-stats {
     font-size: 0.8em;

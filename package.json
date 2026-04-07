@@ -1,6 +1,6 @@
 {
   "name": "vault-search",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Semantic search for your Obsidian vault using local embeddings",
   "main": "main.js",
   "scripts": {

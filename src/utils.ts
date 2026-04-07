@@ -32,8 +32,10 @@ export async function checkOllama(url: string): Promise<boolean> {
 }
 
 export function cosineSimilarity(a: number[], b: number[]): number {
+    const len = Math.min(a.length, b.length);
+    if (len === 0) return 0;
     let dot = 0, normA = 0, normB = 0;
-    for (let i = 0; i < a.length; i++) {
+    for (let i = 0; i < len; i++) {
         dot += a[i] * b[i];
         normA += a[i] * a[i];
         normB += b[i] * b[i];
@@ -141,6 +143,7 @@ export function rankNotes(
     const results: import("./types").SearchResult[] = [];
     for (const [path, entry] of Object.entries(index.notes)) {
         if (settings.searchScope === "hot" && entry.tier !== "hot") continue;
+        if (settings.searchScope === "cold" && entry.tier !== "cold") continue;
         const score = searchNoteScore(queryVec, entry);
         if (score >= settings.minScore) {
             results.push({ path, title: entry.title, tags: entry.tags, score, tier: entry.tier });
@@ -155,14 +158,22 @@ export function renderResultItem(
     result: import("./types").SearchResult,
     app: import("obsidian").App,
 ) {
+    if (result.tier === "cold") container.addClass("is-cold");
+
     const titleRow = container.createDiv({ cls: "vault-search-title-row" });
+    titleRow.createSpan({
+        text: result.tier === "cold" ? "\u2744\ufe0f" : "\ud83d\udd25",
+        cls: `vault-search-tier vault-search-tier-${result.tier}`,
+    });
     titleRow.createSpan({ text: result.title, cls: "vault-search-title" });
     titleRow.createSpan({ text: result.score.toFixed(3), cls: "vault-search-score" });
 
     const file = app.vault.getAbstractFileByPath(result.path);
     if (file instanceof TFile) {
         void getContentPreview(app, file).then(preview => {
-            if (preview) container.createDiv({ text: preview, cls: "vault-search-desc" });
+            if (preview && container.isConnected) {
+                container.createDiv({ text: preview, cls: "vault-search-desc" });
+            }
         });
     }
 
@@ -174,6 +185,101 @@ export function renderResultItem(
     if (folder) {
         metaRow.createSpan({ text: folder, cls: "vault-search-folder" });
     }
+}
+
+export function discoverForNote(
+    filePath: string,
+    index: import("./types").VaultSearchIndex,
+    settings: { minScore: number; topResults: number },
+): import("./types").SearchResult[] {
+    const entry = index.notes[filePath];
+    if (!entry?.embedding?.length) return [];
+
+    // Collect all query vectors: main embedding + chunks (if any)
+    const queryVecs: number[][] = [entry.embedding];
+    if (entry.chunks) {
+        for (const chunk of entry.chunks) {
+            if (chunk.length > 0) queryVecs.push(chunk);
+        }
+    }
+
+    const results: import("./types").SearchResult[] = [];
+    for (const [path, other] of Object.entries(index.notes)) {
+        if (path === filePath) continue;
+        // Max score across all source query vectors × target note
+        let maxScore = 0;
+        for (const qv of queryVecs) {
+            const s = searchNoteScore(qv, other);
+            if (s > maxScore) maxScore = s;
+        }
+        if (maxScore >= settings.minScore) {
+            results.push({ path, title: other.title, tags: other.tags, score: maxScore, tier: other.tier });
+        }
+    }
+
+    // First cut by score to keep only relevant candidates
+    results.sort((a, b) => b.score - a.score);
+    const candidates = results.slice(0, settings.topResults * 2);
+
+    // Re-sort: cold first, then by score within each tier
+    candidates.sort((a, b) => {
+        if (a.tier !== b.tier) return a.tier === "cold" ? -1 : 1;
+        return b.score - a.score;
+    });
+    return candidates.slice(0, settings.topResults);
+}
+
+export async function globalDiscover(
+    index: import("./types").VaultSearchIndex,
+    topN: number = 20,
+    minScore: number = 0.3,
+    onProgress?: (done: number, total: number) => void,
+    cancelled?: { value: boolean },
+): Promise<import("./types").SearchResult[]> {
+    const hotEntries = Object.entries(index.notes)
+        .filter(([, e]) => e.tier === "hot" && e.embedding?.length > 0);
+    const coldEntries = Object.entries(index.notes)
+        .filter(([, e]) => e.tier === "cold" && e.embedding?.length > 0);
+
+    if (hotEntries.length === 0) return []; // No Hot notes to compare against
+    if (coldEntries.length === 0) return []; // No Cold notes to discover
+
+    const results: import("./types").SearchResult[] = [];
+    for (let i = 0; i < coldEntries.length; i++) {
+        if (cancelled?.value) return results;
+
+        const [coldPath, coldEntry] = coldEntries[i];
+        // Collect all cold query vectors: main embedding + chunks
+        const coldVecs: number[][] = [coldEntry.embedding];
+        if (coldEntry.chunks) {
+            for (const chunk of coldEntry.chunks) {
+                if (chunk.length > 0) coldVecs.push(chunk);
+            }
+        }
+        let maxScore = 0;
+        for (const [, hotEntry] of hotEntries) {
+            for (const cv of coldVecs) {
+                const score = searchNoteScore(cv, hotEntry);
+                if (score > maxScore) maxScore = score;
+            }
+        }
+        if (maxScore >= minScore) {
+            results.push({
+                path: coldPath, title: coldEntry.title,
+                tags: coldEntry.tags, score: maxScore, tier: "cold",
+            });
+        }
+
+        // Yield to main thread every 100 cold notes
+        if ((i + 1) % 100 === 0) {
+            onProgress?.(i + 1, coldEntries.length);
+            await new Promise(r => setTimeout(r, 0));
+        }
+    }
+    onProgress?.(coldEntries.length, coldEntries.length);
+
+    results.sort((a, b) => b.score - a.score);
+    return results.slice(0, topN);
 }
 
 export async function getContentPreview(app: App, file: TFile, maxChars = 100): Promise<string> {

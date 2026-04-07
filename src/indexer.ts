@@ -23,11 +23,23 @@ export class Indexer {
 
     private extractTitle(file: TFile): string {
         const cache = this.plugin.app.metadataCache.getFileCache(file);
-        return (
+        let title = String(
             cache?.frontmatter?.title ??
             cache?.headings?.find(h => h.level === 1)?.heading ??
             file.basename
         );
+        // Strip wikilink syntax: [[path/name]] → name, [[name|alias]] → alias
+        if (typeof title === "string" && title.startsWith("[[") && title.endsWith("]]")) {
+            title = title.slice(2, -2);
+            const pipeIdx = title.indexOf("|");
+            if (pipeIdx >= 0) {
+                title = title.slice(pipeIdx + 1);
+            } else {
+                const slashIdx = title.lastIndexOf("/");
+                if (slashIdx >= 0) title = title.slice(slashIdx + 1);
+            }
+        }
+        return title;
     }
 
     private extractTags(file: TFile): string[] {
@@ -107,9 +119,9 @@ export class Indexer {
 
         const textChunks = splitChunks(body, chunkSize, chunkOverlap);
         // Prepend title to each chunk for context
-        const embedTexts = textChunks.map(c => `${title}\n${c}`);
+        const chunkTextsWithTitle = textChunks.map(c => `${title}\n${c}`);
 
-        return this.embedBatch(embedTexts);
+        return this.embedBatch(chunkTextsWithTitle);
     }
 
     async rebuild() {

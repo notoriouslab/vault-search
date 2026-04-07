@@ -87,6 +87,23 @@ export interface Locale {
     apiKeyPlaceholder: string;
     remoteWarning: string;
     selectModel: string;
+    // Discover
+    tabSearch: string;
+    tabDiscover: string;
+    discoverCurrentNote: string;
+    discoverGlobal: string;
+    discoverRelatedTo: (title: string) => string;
+    discoverEmpty: string;
+    discoverGlobalEmpty: string;
+    discoverNoIndex: string;
+    discoverComputing: string;
+    discoverGlobalDesc: string;
+    discoverProgress: (done: number, total: number) => string;
+    generateMoc: string;
+    mocCreated: (path: string) => string;
+    mocNoResults: string;
+    cmdGlobalDiscover: string;
+    scopeCold: string;
     // Settings sections
     sectionSearch: string;
     sectionDesc: string;
@@ -95,6 +112,8 @@ export interface Locale {
     descShort: string;
     descMissing: string;
     descNoFm: string;
+    descPreviewDesc: string;
+    descApplyDesc: string;
     previewBtn: string;
     previewingBtn: string;
     applyBtn: string;
@@ -105,6 +124,11 @@ export interface Locale {
     noticeIndexDone: (total: number, hot: number, cold: number, failed: number) => string;
     noticeUpToDate: string;
     noticeUpdated: (updated: number, total: number, hot: number) => string;
+    noticeIndexCorrupt: string;
+    instructNav: string;
+    instructOpen: string;
+    instructDismiss: string;
+    llmPrompt: (title: string, content: string) => string;
 }
 
 const en: Locale = {
@@ -117,21 +141,21 @@ const en: Locale = {
     embeddingModel: "Embedding model",
     embeddingModelDesc: "Model name (e.g. qwen3-embedding:0.6b, nomic-embed-text, text-embedding-3-small)",
     topResults: "Top results",
-    topResultsDesc: "Number of results to show in search",
+    topResultsDesc: "Max results to show in search and Discover",
     minScore: "Minimum score",
-    minScoreDesc: "Hide results below this cosine similarity threshold (0.0 – 1.0)",
+    minScoreDesc: "Hide results below this similarity threshold (0.0 – 1.0). Lower = more results, higher = stricter match.",
     maxEmbedChars: "Max embed characters",
-    maxEmbedCharsDesc: "Truncate note content for embedding (rebuild index after changing)",
+    maxEmbedCharsDesc: "Truncate note content for embedding. Notes with a description use the description instead. Rebuild index after changing.",
     hotDays: "Hot days",
-    hotDaysDesc: "Notes created within this many days are considered 'hot'",
+    hotDaysDesc: "Notes created within this many days are considered Hot (active). Hot notes have links or were recently created; Cold notes are isolated and surfaced by Discover.",
     searchScope: "Default search scope",
-    searchScopeDesc: "Search only 'hot' notes (linked/recent) or all notes",
+    searchScopeDesc: "Hot = linked or recent notes. Cold = isolated notes (great for rediscovery). All = everything.",
     scopeHot: "Hot only",
     scopeAll: "All notes",
     excludePatterns: "Exclude patterns",
-    excludePatternsDesc: "Folder prefixes to exclude from indexing (one per line)",
+    excludePatternsDesc: "Folder prefixes to exclude from indexing and Discover (one per line, e.g. 3_wiki/)",
     autoIndex: "Auto-index on change",
-    autoIndexDesc: "Automatically re-embed notes when they are modified",
+    autoIndexDesc: "Automatically re-embed notes when modified. Keeps Discover results fresh.",
     chunkingMode: "Chunking mode",
     chunkingModeDesc: "Split long notes into overlapping chunks for better search on long documents",
     chunkingOff: "Off",
@@ -144,16 +168,16 @@ const en: Locale = {
     synonymsLabel: "Synonyms",
     synonymsDesc: "One per line: keyword = synonym1, synonym2",
     llmModel: "LLM model",
-    llmModelDesc: "Ollama model for generating descriptions (e.g. gemma4-e4b-q3)",
+    llmModelDesc: "Ollama model for generating descriptions. Recommended: qwen3:1.7b (fast, good quality).",
     minDescLength: "Min description length",
-    minDescLengthDesc: "Descriptions shorter than this are considered low quality and will be rewritten",
+    minDescLengthDesc: "Descriptions shorter than this are rewritten. Good descriptions improve both search accuracy and Discover results.",
     actions: "Actions",
     rebuildIndex: "Rebuild index",
-    rebuildIndexDesc: "Re-embed all notes from scratch",
+    rebuildIndexDesc: "Re-embed all notes from scratch. Required after adding many new files or changing embedding model.",
     rebuildBtn: "Rebuild",
     indexingBtn: "Indexing...",
     updateIndex: "Update index",
-    updateIndexDesc: "Only re-embed new or modified notes",
+    updateIndexDesc: "Only re-embed new or modified notes. Faster than full rebuild.",
     updateBtn: "Update",
     updatingBtn: "Updating...",
     indexStats: "Index stats",
@@ -194,6 +218,22 @@ const en: Locale = {
     apiKeyPlaceholder: "sk-...",
     remoteWarning: "\u26a0 Remote server — note content will be sent outside your machine",
     selectModel: "Select a model",
+    tabSearch: "Search",
+    tabDiscover: "Discover",
+    discoverCurrentNote: "Current note",
+    discoverGlobal: "Global",
+    discoverRelatedTo: (title) => `Related to: ${title}`,
+    discoverEmpty: "No related notes found",
+    discoverGlobalEmpty: "No Cold notes found. Cold notes are isolated (no links, not recent) — they appear when you add unlinked files to your vault.",
+    discoverNoIndex: "Build index first",
+    discoverComputing: "Computing...",
+    discoverGlobalDesc: "Notes most related to your active thinking but not yet explored",
+    discoverProgress: (done, total) => `Computing: ${done}/${total}...`,
+    generateMoc: "Generate MOC",
+    mocCreated: (path) => `MOC created: ${path}`,
+    mocNoResults: "No results to generate MOC from",
+    cmdGlobalDiscover: "Discover related Cold notes",
+    scopeCold: "Cold only",
     sectionSearch: "Search & index",
     sectionDesc: "Description generator",
     descStats: "Description stats",
@@ -201,6 +241,8 @@ const en: Locale = {
     descShort: "Too short",
     descMissing: "Missing",
     descNoFm: "No frontmatter",
+    descPreviewDesc: "Scan all notes and generate descriptions for those missing or too short. Creates a preview report.",
+    descApplyDesc: "Write previewed descriptions into note frontmatter.",
     previewBtn: "Preview",
     previewingBtn: "Generating...",
     applyBtn: "Apply",
@@ -214,6 +256,24 @@ const en: Locale = {
     noticeUpToDate: "Vault Search: Index up to date",
     noticeUpdated: (updated, total, hot) =>
         `Vault Search: Updated ${updated} notes (total: ${total}, hot: ${hot})`,
+    noticeIndexCorrupt: "Vault Search: Index file is corrupted. Please rebuild index.",
+    instructNav: "navigate",
+    instructOpen: "open note",
+    instructDismiss: "dismiss",
+    llmPrompt: (title, content) => `Task: Generate a description and tags for this note.
+
+Rules:
+1. Description in English, 50-100 words
+2. Description must describe specific content, never repeat the title
+3. Tags in English, 3-5 tags, no # prefix, no spaces
+4. Reply only in JSON
+
+{"description": "...", "tags": ["...", "...", "..."]}
+
+Note title: ${title}
+
+Note content:
+${content}`,
 };
 
 const zhTW: Locale = {
@@ -226,21 +286,21 @@ const zhTW: Locale = {
     embeddingModel: "Embedding 模型",
     embeddingModelDesc: "模型名稱（例如 qwen3-embedding:0.6b、nomic-embed-text、text-embedding-3-small）",
     topResults: "顯示筆數",
-    topResultsDesc: "搜尋結果最多顯示幾筆",
+    topResultsDesc: "搜尋和 Discover 最多顯示幾筆結果",
     minScore: "最低分數",
-    minScoreDesc: "低於此門檻的結果不顯示（0.0 – 1.0）",
+    minScoreDesc: "低於此門檻的結果不顯示（0.0 – 1.0）。越低結果越多，越高越嚴格。",
     maxEmbedChars: "最大 Embed 字數",
-    maxEmbedCharsDesc: "每篇筆記取前幾個字做 embedding（修改後需重建索引）",
+    maxEmbedCharsDesc: "每篇筆記取前幾個字做 embedding。有 description 的筆記會優先用 description。修改後需重建索引。",
     hotDays: "Hot 天數",
-    hotDaysDesc: "近幾天內建立的筆記視為 hot",
+    hotDaysDesc: "近幾天內建立的筆記視為 Hot（活躍）。Hot 筆記有連結或近期建立；Cold 筆記是孤立的，會被 Discover 發掘出來。",
     searchScope: "預設搜尋範圍",
-    searchScopeDesc: "只搜 hot 筆記（有連結/近期）或搜全部",
+    searchScopeDesc: "Hot = 有連結或近期的筆記。Cold = 孤立筆記（適合重新發現）。全部 = 不篩選。",
     scopeHot: "僅 Hot",
     scopeAll: "全部",
     excludePatterns: "排除路徑",
-    excludePatternsDesc: "不索引的資料夾前綴（每行一個）",
+    excludePatternsDesc: "不索引也不 Discover 的資料夾前綴（每行一個，例如 3_wiki/）",
     autoIndex: "自動更新索引",
-    autoIndexDesc: "筆記修改時自動重新 embed",
+    autoIndexDesc: "筆記修改時自動重新 embed，保持 Discover 結果即時。",
     chunkingMode: "Chunking 模式",
     chunkingModeDesc: "將長文切成重疊片段，提升長文搜尋品質",
     chunkingOff: "關閉",
@@ -253,16 +313,16 @@ const zhTW: Locale = {
     synonymsLabel: "同義詞",
     synonymsDesc: "每行一組：關鍵字 = 同義詞1, 同義詞2",
     llmModel: "LLM 模型",
-    llmModelDesc: "用於生成 description 的 Ollama 模型（例如 gemma4-e4b-q3）",
+    llmModelDesc: "用於生成 description 的 Ollama 模型。推薦：qwen3:1.7b（快速、品質好）。",
     minDescLength: "最短 description 字數",
-    minDescLengthDesc: "低於此字數的 description 視為品質不足，將重新生成",
+    minDescLengthDesc: "低於此字數的 description 會重新生成。好的 description 能提升搜尋和 Discover 的準確度。",
     actions: "操作",
     rebuildIndex: "重建索引",
-    rebuildIndexDesc: "全部重新 embed",
+    rebuildIndexDesc: "全部重新 embed。大量新增檔案或更換 embedding 模型後需要執行。",
     rebuildBtn: "重建",
     indexingBtn: "建立中...",
     updateIndex: "更新索引",
-    updateIndexDesc: "只 embed 新增或修改的筆記",
+    updateIndexDesc: "只 embed 新增或修改的筆記，比全部重建快。",
     updateBtn: "更新",
     updatingBtn: "更新中...",
     indexStats: "索引統計",
@@ -303,6 +363,22 @@ const zhTW: Locale = {
     apiKeyPlaceholder: "sk-...",
     remoteWarning: "\u26a0 遠端伺服器 — 筆記內容將傳送至外部機器",
     selectModel: "選擇模型",
+    tabSearch: "搜尋",
+    tabDiscover: "發掘",
+    discoverCurrentNote: "當前筆記",
+    discoverGlobal: "全域",
+    discoverRelatedTo: (title) => `相關於：${title}`,
+    discoverEmpty: "找不到相關筆記",
+    discoverGlobalEmpty: "沒有 Cold 筆記。Cold 筆記是孤立的（無連結、非近期）——將未整理的檔案加入 vault 後就會出現。",
+    discoverNoIndex: "請先建立索引",
+    discoverComputing: "計算中...",
+    discoverGlobalDesc: "與你目前思路最相關但尚未探索的筆記",
+    discoverProgress: (done, total) => `計算中：${done}/${total}...`,
+    generateMoc: "生成 MOC",
+    mocCreated: (path) => `MOC 已建立：${path}`,
+    mocNoResults: "沒有結果可生成 MOC",
+    cmdGlobalDiscover: "發掘相關的 Cold 筆記",
+    scopeCold: "僅 Cold",
     sectionSearch: "搜尋與索引",
     sectionDesc: "Description 生成器",
     descStats: "Description 統計",
@@ -310,6 +386,8 @@ const zhTW: Locale = {
     descShort: "過短",
     descMissing: "缺少",
     descNoFm: "無 frontmatter",
+    descPreviewDesc: "掃描所有筆記，為缺少或過短的 description 生成預覽報告。",
+    descApplyDesc: "將預覽的 description 寫入筆記的 frontmatter。",
     previewBtn: "預覽",
     previewingBtn: "生成中...",
     applyBtn: "套用",
@@ -323,6 +401,24 @@ const zhTW: Locale = {
     noticeUpToDate: "Vault Search：索引已是最新",
     noticeUpdated: (updated, total, hot) =>
         `Vault Search：已更新 ${updated} 篇（共 ${total} 篇，${hot} hot）`,
+    noticeIndexCorrupt: "Vault Search：索引檔案已損壞，請重建索引。",
+    instructNav: "瀏覽",
+    instructOpen: "開啟筆記",
+    instructDismiss: "關閉",
+    llmPrompt: (title, content) => `任務：為筆記產生 description 和 tags。
+
+規則：
+1. description 用繁體中文，50-100 字
+2. description 必須描述具體內容，禁止重複標題
+3. tags 用繁體中文，3-5 個，不要 # 前綴，不能有空格
+4. 只回覆 JSON
+
+{"description": "...", "tags": ["...", "...", "..."]}
+
+筆記標題：${title}
+
+筆記內容：
+${content}`,
 };
 
 const locales: Record<string, Locale> = { en, "zh-TW": zhTW };

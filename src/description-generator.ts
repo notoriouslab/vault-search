@@ -164,7 +164,7 @@ export class DescriptionGenerator {
         }
 
         let applied = 0;
-        const progress = new Notice(`Applying: 0/${entries.length}...`, 0);
+        const progress = new Notice(t.descApplying(0, entries.length), 0);
 
         for (let i = 0; i < entries.length; i++) {
             const entry = entries[i];
@@ -213,20 +213,7 @@ export class DescriptionGenerator {
         title: string,
         content: string,
     ): Promise<{ description: string; tags?: string[] }> {
-        const prompt = `任務：為筆記產生 description 和 tags。
-
-規則：
-1. description 用繁體中文，50-100 字
-2. description 必須描述具體內容，禁止重複標題
-3. tags 用繁體中文，3-5 個，不要 # 前綴，不能有空格
-4. 只回覆 JSON
-
-{"description": "...", "tags": ["...", "...", "..."]}
-
-筆記標題：${title}
-
-筆記內容：
-${content}`;
+        const prompt = t.llmPrompt(title, content);
 
         const apiKey = this.plugin.settings.apiKey;
         const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -383,9 +370,16 @@ ${content}`;
 
             if (line.startsWith("### ")) {
                 if (currentAction && currentAction.newDesc) entries.push(currentAction);
+                let rawTitle = line.slice(4).trim();
+                // Strip wikilink syntax from report headings: [[path/name]] → name
+                if (rawTitle.startsWith("[[") && rawTitle.endsWith("]]")) {
+                    rawTitle = rawTitle.slice(2, -2);
+                    const slashIdx = rawTitle.lastIndexOf("/");
+                    if (slashIdx >= 0) rawTitle = rawTitle.slice(slashIdx + 1);
+                }
                 currentAction = {
                     path: "",
-                    title: line.slice(4).trim(),
+                    title: rawTitle,
                     action: currentSection,
                 };
             } else if (currentAction) {

@@ -128,9 +128,10 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             .addDropdown(drop => {
                 drop.addOption("hot", t.scopeHot);
                 drop.addOption("all", t.scopeAll);
+                drop.addOption("cold", t.scopeCold);
                 drop.setValue(this.plugin.settings.searchScope);
                 drop.onChange(async (val) => {
-                    this.plugin.settings.searchScope = val as "hot" | "all";
+                    this.plugin.settings.searchScope = val as "hot" | "all" | "cold";
                     await this.plugin.saveSettings();
                 });
             });
@@ -306,7 +307,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName(t.cmdDescPreview)
-            .setDesc(t.rebuildIndexDesc)
+            .setDesc(t.descPreviewDesc)
             .addButton(btn => {
                 btn.setButtonText(t.previewBtn);
                 btn.setCta();
@@ -322,7 +323,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
 
         new Setting(containerEl)
             .setName(t.cmdDescApply)
-            .setDesc(t.updateIndexDesc)
+            .setDesc(t.descApplyDesc)
             .addButton(btn => {
                 btn.setButtonText(t.applyBtn);
                 btn.onClick(async () => {

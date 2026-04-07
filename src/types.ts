@@ -14,7 +14,7 @@ export interface VaultSearchSettings {
     minScore: number;
     maxEmbedChars: number;
     hotDays: number;
-    searchScope: "hot" | "all";
+    searchScope: "hot" | "all" | "cold";
     excludePatterns: string[];
     autoIndex: boolean;
     synonyms: Record<string, string[]>;
@@ -35,7 +35,7 @@ export const DEFAULT_SETTINGS: VaultSearchSettings = {
     maxEmbedChars: 2000,
     hotDays: 90,
     searchScope: "hot",
-    excludePatterns: ["_templates/", "templates/", ".trash/", "_description_report.md"],
+    excludePatterns: ["_templates/", "templates/", ".trash/", "_description_report.md", "3_wiki/"],
     autoIndex: true,
     synonyms: {},
     llmModel: "qwen3:1.7b",
@@ -66,7 +66,13 @@ export interface VaultSearchIndex {
     notes: Record<string, NoteEntry>;
 }
 
+/** data.json stores settings only (v0.3.0+). Index is in index.json. */
 export interface VaultSearchData {
+    settings: VaultSearchSettings;
+}
+
+/** Legacy format (v0.2.0): data.json stored both settings and index. */
+export interface VaultSearchDataLegacy {
     settings: VaultSearchSettings;
     index: VaultSearchIndex | null;
 }

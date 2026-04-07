@@ -16,9 +16,9 @@ export class SearchModal extends SuggestModal<SearchResult> {
         this.plugin = plugin;
         this.setPlaceholder(t.searchPlaceholder);
         this.setInstructions([
-            { command: "↑↓", purpose: "navigate" },
-            { command: "↵", purpose: "open note" },
-            { command: "esc", purpose: "dismiss" },
+            { command: "↑↓", purpose: t.instructNav },
+            { command: "↵", purpose: t.instructOpen },
+            { command: "esc", purpose: t.instructDismiss },
         ]);
     }
 
