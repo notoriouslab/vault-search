@@ -5,9 +5,11 @@
 
 <p align="center">
   <a href="https://github.com/notoriouslab/vault-search/releases"><img src="https://img.shields.io/github/v/release/notoriouslab/vault-search?style=flat-square" alt="Release"></a>
+  <a href="https://github.com/notoriouslab/vault-search/releases"><img src="https://img.shields.io/github/downloads/notoriouslab/vault-search/total?style=flat-square&color=573E7A" alt="Downloads"></a>
   <a href="https://github.com/notoriouslab/vault-search/blob/main/LICENSE"><img src="https://img.shields.io/github/license/notoriouslab/vault-search?style=flat-square" alt="License"></a>
   <img src="https://img.shields.io/badge/Obsidian-Desktop-7C3AED?style=flat-square&logo=obsidian" alt="Obsidian Desktop">
   <img src="https://img.shields.io/badge/Ollama-Local_AI-000?style=flat-square" alt="Ollama">
+  <a href="https://github.com/TfTHacker/obsidian42-brat"><img src="https://img.shields.io/badge/BRAT-Available-blue?style=flat-square" alt="BRAT"></a>
 </p>
 
 <p align="center">
@@ -84,18 +86,19 @@ No cloud services. No API keys. No subscription fees. Your notes never leave you
 
 ## Installation
 
-### BRAT (recommended for beta)
+### BRAT (recommended while pending community review)
 
 1. Install [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin
 2. Add this repository: `notoriouslab/vault-search`
-3. For v0.3.0 beta: specify branch `feature/discover`
-4. Enable "Vault Search" in Community plugins
+3. Enable "Vault Search" in Community plugins
 
 ### Manual
 
 1. Download `main.js`, `manifest.json`, `styles.css` from the [latest release](https://github.com/notoriouslab/vault-search/releases)
 2. Copy to `.obsidian/plugins/vault-search/` in your vault
 3. Enable in Settings → Community plugins
+
+> **Note:** If your vault is tracked by Git, add `.obsidian/plugins/*/data.json` to `.gitignore` to avoid accidentally committing API keys or personal settings.
 
 ## Quick Start
 

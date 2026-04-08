@@ -5,9 +5,11 @@
 
 <p align="center">
   <a href="https://github.com/notoriouslab/vault-search/releases"><img src="https://img.shields.io/github/v/release/notoriouslab/vault-search?style=flat-square" alt="Release"></a>
+  <a href="https://github.com/notoriouslab/vault-search/releases"><img src="https://img.shields.io/github/downloads/notoriouslab/vault-search/total?style=flat-square&color=573E7A" alt="Downloads"></a>
   <a href="https://github.com/notoriouslab/vault-search/blob/main/LICENSE"><img src="https://img.shields.io/github/license/notoriouslab/vault-search?style=flat-square" alt="License"></a>
   <img src="https://img.shields.io/badge/Obsidian-Desktop-7C3AED?style=flat-square&logo=obsidian" alt="Obsidian Desktop">
   <img src="https://img.shields.io/badge/Ollama-本地AI-000?style=flat-square" alt="Ollama">
+  <a href="https://github.com/TfTHacker/obsidian42-brat"><img src="https://img.shields.io/badge/BRAT-可用-blue?style=flat-square" alt="BRAT"></a>
 </p>
 
 <p align="center">
@@ -84,18 +86,19 @@
 
 ## 安裝
 
-### BRAT（推薦測試版）
+### BRAT（社群審核中，推薦此方式安裝）
 
 1. 安裝 [BRAT](https://github.com/TfTHacker/obsidian42-brat) plugin
 2. 新增本 repo：`notoriouslab/vault-search`
-3. v0.3.0 測試版：指定 branch `feature/discover`
-4. 在 Community plugins 啟用「Vault Search」
+3. 在 Community plugins 啟用「Vault Search」
 
 ### 手動安裝
 
 1. 從 [Releases](https://github.com/notoriouslab/vault-search/releases) 下載 `main.js`、`manifest.json`、`styles.css`
 2. 複製到 vault 的 `.obsidian/plugins/vault-search/`
 3. 在 Settings → Community plugins 啟用
+
+> **提醒：** 如果 vault 使用 Git 管理，建議在 `.gitignore` 加入 `.obsidian/plugins/*/data.json`，避免意外提交 API key 或個人設定。
 
 ## 快速開始
 
