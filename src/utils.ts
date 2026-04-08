@@ -9,6 +9,7 @@ export interface OllamaModel {
 
 export async function fetchOllamaModels(url: string): Promise<OllamaModel[]> {
     try {
+        validateServerUrl(url);
         const resp = await requestUrl({ url: `${url}/api/tags`, throw: false });
         if (resp.status !== 200) return [];
         const data = resp.json;
@@ -24,6 +25,7 @@ export async function fetchOllamaModels(url: string): Promise<OllamaModel[]> {
 
 export async function checkOllama(url: string): Promise<boolean> {
     try {
+        validateServerUrl(url);
         const resp = await requestUrl({ url, throw: false });
         return resp.status === 200;
     } catch {
@@ -61,6 +63,13 @@ function truncateError(text: string, max = 200): string {
     return text.length > max ? text.slice(0, max) + "..." : text;
 }
 
+export function validateServerUrl(url: string) {
+    const parsed = new URL(url);
+    if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        throw new Error("Only http/https server URLs are supported");
+    }
+}
+
 export async function embedText(
     text: string,
     url: string,
@@ -72,6 +81,18 @@ export async function embedText(
     return results[0] ?? [];
 }
 
+const EMBED_TIMEOUT_MS = 30000;
+
+function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise<T> {
+    let timer: ReturnType<typeof setTimeout>;
+    return Promise.race([
+        promise.finally(() => clearTimeout(timer)),
+        new Promise<never>((_, reject) => {
+            timer = setTimeout(() => reject(new Error(`${label} timeout (${ms / 1000}s)`)), ms);
+        }),
+    ]);
+}
+
 export async function embedTexts(
     texts: string[],
     url: string,
@@ -80,15 +101,16 @@ export async function embedTexts(
     apiKey?: string,
 ): Promise<number[][]> {
     if (texts.length === 0) return [];
+    validateServerUrl(url);
 
     if (format === "openai") {
-        const resp = await requestUrl({
+        const resp = await withTimeout(requestUrl({
             url: `${url}/v1/embeddings`,
             method: "POST",
             headers: buildHeaders(apiKey),
             body: JSON.stringify({ model, input: texts }),
             throw: false,
-        });
+        }), EMBED_TIMEOUT_MS, "Embedding");
         if (resp.status !== 200) throw new Error(`API ${resp.status}: ${truncateError(resp.text)}`);
         const data = resp.json;
         // OpenAI returns {data: [{embedding: [...]}, ...]} sorted by index
@@ -98,13 +120,13 @@ export async function embedTexts(
     }
 
     // Ollama format — supports input as string[]
-    const resp = await requestUrl({
+    const resp = await withTimeout(requestUrl({
         url: `${url}/api/embed`,
         method: "POST",
         headers: buildHeaders(apiKey),
         body: JSON.stringify({ model, input: texts }),
         throw: false,
-    });
+    }), EMBED_TIMEOUT_MS, "Embedding");
     if (resp.status !== 200) throw new Error(`Ollama ${resp.status}: ${truncateError(resp.text)}`);
     const data = resp.json;
     return data.embeddings ?? [];
@@ -112,6 +134,7 @@ export async function embedTexts(
 
 export function splitChunks(text: string, size: number, overlap: number): string[] {
     if (text.length <= size) return [text];
+    if (overlap >= size) overlap = 0;
     const step = size - overlap;
     const chunks: string[] = [];
     for (let i = 0; i < text.length; i += step) {

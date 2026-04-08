@@ -7,6 +7,8 @@ import { t } from "./i18n";
 const BATCH_SIZE = 5;
 
 export class Indexer {
+    indexing = false;
+
     constructor(private plugin: VaultSearchPlugin) {}
 
     shouldExclude(path: string): boolean {
@@ -50,18 +52,22 @@ export class Indexer {
         return [];
     }
 
-    private computeTier(file: TFile): "hot" | "cold" {
-        const cache = this.plugin.app.metadataCache.getFileCache(file);
-        const hasOutgoing = (cache?.links?.length ?? 0) > 0 || (cache?.embeds?.length ?? 0) > 0;
-
+    /** Build a Set of file paths that have at least one incoming link (O(N) once). */
+    private buildIncomingSet(): Set<string> {
+        const set = new Set<string>();
         const resolvedLinks = this.plugin.app.metadataCache.resolvedLinks;
-        let hasIncoming = false;
         for (const [src, targets] of Object.entries(resolvedLinks)) {
-            if (src !== file.path && file.path in targets) {
-                hasIncoming = true;
-                break;
+            for (const path of Object.keys(targets)) {
+                if (path !== src) set.add(path);
             }
         }
+        return set;
+    }
+
+    private computeTier(file: TFile, incomingSet: Set<string>): "hot" | "cold" {
+        const cache = this.plugin.app.metadataCache.getFileCache(file);
+        const hasOutgoing = (cache?.links?.length ?? 0) > 0 || (cache?.embeds?.length ?? 0) > 0;
+        const hasIncoming = incomingSet.has(file.path);
 
         const created = cache?.frontmatter?.created;
         const createdTs = created ? new Date(created).getTime() : file.stat.ctime;
@@ -89,11 +95,11 @@ export class Indexer {
         return full.length > maxChars ? full.slice(0, maxChars) : full;
     }
 
-    private buildNoteEntry(file: TFile, embedding: number[], chunks?: number[][]): NoteEntry {
+    private buildNoteEntry(file: TFile, embedding: number[], incomingSet: Set<string>, chunks?: number[][]): NoteEntry {
         const entry: NoteEntry = {
             title: this.extractTitle(file),
             tags: this.extractTags(file),
-            tier: this.computeTier(file),
+            tier: this.computeTier(file, incomingSet),
             mtime: file.stat.mtime,
             embedding,
         };
@@ -130,6 +136,7 @@ export class Indexer {
             return;
         }
         const files = this.getMarkdownFiles();
+        const incomingSet = this.buildIncomingSet();
         const progress = new Notice(t.noticeIndexing(0, files.length), 0);
 
         const notes: Record<string, NoteEntry> = {};
@@ -145,7 +152,7 @@ export class Indexer {
                 const emb = embeddings[j];
                 if (!emb || emb.length === 0) { failed++; continue; }
                 if (dim === 0) dim = emb.length;
-                notes[batch[j].path] = this.buildNoteEntry(batch[j], emb);
+                notes[batch[j].path] = this.buildNoteEntry(batch[j], emb, incomingSet);
             }
 
             progress.setMessage(t.noticeIndexing(Math.min(i + BATCH_SIZE, files.length), files.length));
@@ -193,6 +200,7 @@ export class Indexer {
             return;
         }
         const files = this.getMarkdownFiles();
+        const incomingSet = this.buildIncomingSet();
         const existing = this.plugin.index?.notes ?? {};
         const toEmbed: TFile[] = [];
 
@@ -226,7 +234,7 @@ export class Indexer {
             for (let j = 0; j < batch.length; j++) {
                 const emb = embeddings[j];
                 if (!emb || emb.length === 0) continue;
-                existing[batch[j].path] = this.buildNoteEntry(batch[j], emb);
+                existing[batch[j].path] = this.buildNoteEntry(batch[j], emb, incomingSet);
             }
 
             progress.setMessage(t.noticeIndexing(Math.min(i + BATCH_SIZE, toEmbed.length), toEmbed.length));
@@ -237,7 +245,7 @@ export class Indexer {
         // Update tiers for all files (links may have changed)
         for (const file of files) {
             if (existing[file.path]) {
-                existing[file.path].tier = this.computeTier(file);
+                existing[file.path].tier = this.computeTier(file, incomingSet);
             }
         }
 
@@ -258,11 +266,12 @@ export class Indexer {
     async indexSingleFile(file: TFile) {
         if (!this.plugin.index) return;
         const text = await this.buildEmbedText(file);
+        const incomingSet = this.buildIncomingSet();
 
         try {
             const [emb] = await this.embedBatch([text]);
             if (emb && emb.length > 0) {
-                this.plugin.index.notes[file.path] = this.buildNoteEntry(file, emb);
+                this.plugin.index.notes[file.path] = this.buildNoteEntry(file, emb, incomingSet);
                 this.plugin.index.meta.count = Object.keys(this.plugin.index.notes).length;
             }
         } catch (e) {

@@ -52,7 +52,7 @@ export class SearchView extends ItemView {
     }
 
     getViewType() { return VIEW_TYPE_SEARCH; }
-    getDisplayText() { return "Vault search"; }
+    getDisplayText() { return t.viewDisplayName; }
     getIcon() { return "compass"; }
 
     async onOpen() {
@@ -344,18 +344,19 @@ export class SearchView extends ItemView {
         let mocTitle = `MOC ${now.toISOString().slice(0, 10)}`;
         let mocDesc = "";
         if (source === "search" && this.currentQuery) {
-            mocTitle = `MOC: ${this.currentQuery}`;
-            mocDesc = `Search results for "${this.currentQuery}"`;
+            mocTitle = t.mocTitleSearch(this.currentQuery);
+            mocDesc = t.mocDescSearch(this.currentQuery);
         } else if (source.startsWith("discover-current")) {
             const activeFile = this.app.workspace.getActiveFile();
             if (activeFile) {
                 const entry = this.plugin.index?.notes[activeFile.path];
-                mocTitle = `MOC: ${entry?.title ?? activeFile.basename}`;
-                mocDesc = `Notes related to "${entry?.title ?? activeFile.basename}"`;
+                const noteTitle = entry?.title ?? activeFile.basename;
+                mocTitle = t.mocTitleRelated(noteTitle);
+                mocDesc = t.mocDescRelated(noteTitle);
             }
         } else if (source === "discover-global") {
-            mocTitle = "MOC: Global Discover";
-            mocDesc = "Cold notes most related to current Hot notes";
+            mocTitle = t.mocTitleGlobal;
+            mocDesc = t.mocDescGlobal;
         }
 
         // Build MOC content

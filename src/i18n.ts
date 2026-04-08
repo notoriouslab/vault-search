@@ -125,6 +125,14 @@ export interface Locale {
     noticeUpToDate: string;
     noticeUpdated: (updated: number, total: number, hot: number) => string;
     noticeIndexCorrupt: string;
+    indexingInProgress: string;
+    viewDisplayName: string;
+    mocTitleSearch: (query: string) => string;
+    mocDescSearch: (query: string) => string;
+    mocTitleRelated: (title: string) => string;
+    mocDescRelated: (title: string) => string;
+    mocTitleGlobal: string;
+    mocDescGlobal: string;
     instructNav: string;
     instructOpen: string;
     instructDismiss: string;
@@ -257,6 +265,14 @@ const en: Locale = {
     noticeUpdated: (updated, total, hot) =>
         `Vault Search: Updated ${updated} notes (total: ${total}, hot: ${hot})`,
     noticeIndexCorrupt: "Vault Search: Index file is corrupted. Please rebuild index.",
+    indexingInProgress: "Vault Search: Indexing already in progress",
+    viewDisplayName: "Vault search",
+    mocTitleSearch: (query) => `MOC: ${query}`,
+    mocDescSearch: (query) => `Search results for "${query}"`,
+    mocTitleRelated: (title) => `MOC: ${title}`,
+    mocDescRelated: (title) => `Notes related to "${title}"`,
+    mocTitleGlobal: "MOC: Global Discover",
+    mocDescGlobal: "Cold notes most related to current Hot notes",
     instructNav: "navigate",
     instructOpen: "open note",
     instructDismiss: "dismiss",
@@ -402,6 +418,14 @@ const zhTW: Locale = {
     noticeUpdated: (updated, total, hot) =>
         `Vault Search：已更新 ${updated} 篇（共 ${total} 篇，${hot} hot）`,
     noticeIndexCorrupt: "Vault Search：索引檔案已損壞，請重建索引。",
+    indexingInProgress: "Vault Search：正在索引中，請稍候",
+    viewDisplayName: "語意搜尋",
+    mocTitleSearch: (query) => `MOC：${query}`,
+    mocDescSearch: (query) => `「${query}」的搜尋結果`,
+    mocTitleRelated: (title) => `MOC：${title}`,
+    mocDescRelated: (title) => `與「${title}」相關的筆記`,
+    mocTitleGlobal: "MOC：全域發掘",
+    mocDescGlobal: "與現有熱門筆記最相關的冷門筆記",
     instructNav: "瀏覽",
     instructOpen: "開啟筆記",
     instructDismiss: "關閉",

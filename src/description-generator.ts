@@ -1,6 +1,6 @@
 import { Notice, requestUrl, TFile } from "obsidian";
 import type VaultSearchPlugin from "./main";
-import { checkOllama, stripFrontmatter } from "./utils";
+import { checkOllama, stripFrontmatter, validateServerUrl } from "./utils";
 import { t } from "./i18n";
 
 interface DescAction {
@@ -214,6 +214,7 @@ export class DescriptionGenerator {
         content: string,
     ): Promise<{ description: string; tags?: string[] }> {
         const prompt = t.llmPrompt(title, content);
+        validateServerUrl(url);
 
         const apiKey = this.plugin.settings.apiKey;
         const headers: Record<string, string> = { "Content-Type": "application/json" };
@@ -253,7 +254,7 @@ export class DescriptionGenerator {
         const tryParse = (text: string): { description: string; tags?: string[] } | null => {
             try {
                 const parsed = JSON.parse(text);
-                const desc = parsed.description ?? parsed.summary ?? "";
+                const desc = (parsed.description ?? parsed.summary ?? "").slice(0, 500);
                 const tags = Array.isArray(parsed.tags)
                     ? parsed.tags
                         .map(String)

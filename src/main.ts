@@ -30,7 +30,7 @@ export default class VaultSearchPlugin extends Plugin {
         this.registerView(VIEW_TYPE_SEARCH, (leaf) => new SearchView(leaf, this));
 
         // Ribbon icon to open sidebar
-        this.addRibbonIcon("compass", "Vault search", () => {
+        this.addRibbonIcon("compass", t.viewDisplayName, () => {
             void this.activateView();
         });
 
@@ -232,17 +232,29 @@ export default class VaultSearchPlugin extends Plugin {
     }
 
     async rebuildIndex() {
-        await this.indexer.rebuild();
-        await this.saveIndex();
+        if (this.indexer.indexing) { new Notice(t.indexingInProgress); return; }
+        this.indexer.indexing = true;
+        try {
+            await this.indexer.rebuild();
+            await this.saveIndex();
+        } finally {
+            this.indexer.indexing = false;
+        }
     }
 
     async updateIndex() {
-        await this.indexer.update();
-        await this.saveIndex();
+        if (this.indexer.indexing) { new Notice(t.indexingInProgress); return; }
+        this.indexer.indexing = true;
+        try {
+            await this.indexer.update();
+            await this.saveIndex();
+        } finally {
+            this.indexer.indexing = false;
+        }
     }
 
     private onFileChange(file: unknown, type: string) {
-        if (!this.settings.autoIndex || this.migrating) return;
+        if (!this.settings.autoIndex || this.migrating || this.indexer.indexing) return;
         if (!(file instanceof TFile) || file.extension !== "md") return;
         if (this.indexer.shouldExclude(file.path)) return;
 
