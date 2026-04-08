@@ -27,7 +27,7 @@ export class SearchView extends ItemView {
     private activeTab: TabId = "search";
     private searchContainer!: HTMLDivElement;
     private discoverContainer!: HTMLDivElement;
-    private tabEls: Record<TabId, HTMLDivElement> = {} as any;
+    private tabEls = {} as Record<TabId, HTMLDivElement>;
 
     // Search state
     private inputEl!: HTMLInputElement;
@@ -41,7 +41,7 @@ export class SearchView extends ItemView {
     private discoverMode: DiscoverMode = "current";
     private discoverStatusEl!: HTMLDivElement;
     private discoverResultsEl!: HTMLDivElement;
-    private modeEls: Record<DiscoverMode, HTMLButtonElement> = {} as any;
+    private modeEls = {} as Record<DiscoverMode, HTMLButtonElement>;
     private mocBtn!: HTMLButtonElement;
     private globalCancelled = { value: false };
     private lastDiscoverResults: SearchResult[] = [];
