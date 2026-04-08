@@ -305,6 +305,17 @@ export async function globalDiscover(
     return results.slice(0, topN);
 }
 
+/** Format a Date as `YYYY-MM-DD HH:MM+TZ:TZ` with the local timezone offset. */
+export function formatLocalDateTime(d: Date): string {
+    const tzOffset = -d.getTimezoneOffset();
+    const sign = tzOffset >= 0 ? "+" : "-";
+    const tzH = String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, "0");
+    const tzM = String(Math.abs(tzOffset) % 60).padStart(2, "0");
+    const date = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+    const time = `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+    return `${date} ${time}${sign}${tzH}:${tzM}`;
+}
+
 export async function getContentPreview(app: App, file: TFile, maxChars = 100): Promise<string> {
     const cache = app.metadataCache.getFileCache(file);
     const desc = cache?.frontmatter?.description;

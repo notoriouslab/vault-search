@@ -11,7 +11,7 @@ declare module "obsidian" {
 }
 import type VaultSearchPlugin from "./main";
 import { SearchResult } from "./types";
-import { checkOllama, discoverForNote, embedText, getContentPreview, globalDiscover, rankNotes, renderResultItem } from "./utils";
+import { checkOllama, discoverForNote, embedText, formatLocalDateTime, getContentPreview, globalDiscover, rankNotes, renderResultItem } from "./utils";
 import { t } from "./i18n";
 import { expandQuery } from "./synonyms";
 
@@ -364,7 +364,7 @@ export class SearchView extends ItemView {
         lines.push("---");
         lines.push(`title: ${JSON.stringify(mocTitle)}`);
         lines.push('description: ""');
-        lines.push(`pubDate: ${now.toISOString().slice(0, 16).replace("T", " ")}+08:00`);
+        lines.push(`pubDate: ${formatLocalDateTime(now)}`);
         lines.push("category: MOC");
         lines.push("tags:");
         lines.push("  - MOC");

@@ -86,6 +86,7 @@ export interface Locale {
     urlPlaceholder: string;
     apiKeyPlaceholder: string;
     remoteWarning: string;
+    httpApiKeyWarning: string;
     selectModel: string;
     // Discover
     tabSearch: string;
@@ -225,6 +226,7 @@ const en: Locale = {
     urlPlaceholder: "http://localhost:11434",
     apiKeyPlaceholder: "sk-...",
     remoteWarning: "\u26a0 Remote server — note content will be sent outside your machine",
+    httpApiKeyWarning: "\u26a0 API key will be sent in plain text over HTTP. Consider using HTTPS.",
     selectModel: "Select a model",
     tabSearch: "Search",
     tabDiscover: "Discover",
@@ -378,6 +380,7 @@ const zhTW: Locale = {
     urlPlaceholder: "http://localhost:11434",
     apiKeyPlaceholder: "sk-...",
     remoteWarning: "\u26a0 遠端伺服器 — 筆記內容將傳送至外部機器",
+    httpApiKeyWarning: "\u26a0 API key 將以明文透過 HTTP 傳送，建議改用 HTTPS。",
     selectModel: "選擇模型",
     tabSearch: "搜尋",
     tabDiscover: "發掘",

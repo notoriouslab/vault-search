@@ -363,12 +363,18 @@ export class VaultSearchSettingTab extends PluginSettingTab {
     private updateRemoteWarning(setting: Setting, url: string) {
         const existing = setting.settingEl.querySelector(".vault-search-remote-warn");
         if (existing) existing.remove();
+        const existingHttp = setting.settingEl.querySelector(".vault-search-http-warn");
+        if (existingHttp) existingHttp.remove();
         try {
             const parsed = new URL(url);
             const isLocal = ["localhost", "127.0.0.1", "0.0.0.0", "::1"].includes(parsed.hostname);
             if (!isLocal) {
                 const warn = setting.settingEl.createDiv({ cls: "vault-search-remote-warn" });
                 warn.setText(t.remoteWarning);
+            }
+            if (parsed.protocol === "http:" && !isLocal && this.plugin.settings.apiKey) {
+                const warn = setting.settingEl.createDiv({ cls: "vault-search-http-warn vault-search-remote-warn" });
+                warn.setText(t.httpApiKeyWarning);
             }
         } catch { /* invalid URL, ignore */ }
     }

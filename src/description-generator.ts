@@ -1,6 +1,6 @@
 import { Notice, requestUrl, TFile } from "obsidian";
 import type VaultSearchPlugin from "./main";
-import { checkOllama, stripFrontmatter, validateServerUrl } from "./utils";
+import { checkOllama, formatLocalDateTime, stripFrontmatter, validateServerUrl } from "./utils";
 import { t } from "./i18n";
 
 interface DescAction {
@@ -187,12 +187,7 @@ export class DescriptionGenerator {
                     }
                     // Set pubDate if skeleton and not existing
                     if (entry.action === "skeleton" && !fm.pubDate) {
-                        const d = new Date(file.stat.ctime);
-                        const tzOffset = -d.getTimezoneOffset();
-                        const sign = tzOffset >= 0 ? "+" : "-";
-                        const tzH = String(Math.floor(Math.abs(tzOffset) / 60)).padStart(2, "0");
-                        const tzM = String(Math.abs(tzOffset) % 60).padStart(2, "0");
-                        fm.pubDate = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")} ${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}${sign}${tzH}:${tzM}`;
+                        fm.pubDate = formatLocalDateTime(new Date(file.stat.ctime));
                     }
                 });
                 applied++;
