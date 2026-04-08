@@ -363,7 +363,7 @@ export class SearchView extends ItemView {
         const lines: string[] = [];
         lines.push("---");
         lines.push(`title: ${JSON.stringify(mocTitle)}`);
-        lines.push('description: ""');
+        lines.push(`description: ${JSON.stringify(mocDesc)}`);
         lines.push(`pubDate: ${formatLocalDateTime(now)}`);
         lines.push("category: MOC");
         lines.push("tags:");
