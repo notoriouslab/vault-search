@@ -156,6 +156,7 @@ export class Indexer {
             }
 
             progress.setMessage(t.noticeIndexing(Math.min(i + BATCH_SIZE, files.length), files.length));
+            await new Promise(r => setTimeout(r, 0)); // Yield to UI thread
         }
 
         // Chunking pass (after base embeddings)
@@ -173,6 +174,7 @@ export class Indexer {
                     console.warn(`Vault Search: chunking failed for ${file.path}`, e);
                 }
                 progress.setMessage(t.chunkingProgress(i + 1, toChunk.length));
+                if ((i + 1) % 5 === 0) await new Promise(r => setTimeout(r, 0)); // Yield to UI thread
             }
         }
 
@@ -238,6 +240,7 @@ export class Indexer {
             }
 
             progress.setMessage(t.noticeIndexing(Math.min(i + BATCH_SIZE, toEmbed.length), toEmbed.length));
+            await new Promise(r => setTimeout(r, 0)); // Yield to UI thread
         }
 
         progress.hide();

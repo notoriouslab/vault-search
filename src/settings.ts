@@ -42,6 +42,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
                 drop.onChange(async (val) => {
                     this.plugin.settings.apiFormat = val as "ollama" | "openai";
                     await this.plugin.saveSettings();
+                    void this.loadModelOptions();
                 });
             });
 
@@ -380,7 +381,7 @@ export class VaultSearchSettingTab extends PluginSettingTab {
     }
 
     private async loadModelOptions() {
-        const models = await fetchOllamaModels(this.plugin.settings.ollamaUrl);
+        const models = await fetchOllamaModels(this.plugin.settings.ollamaUrl, this.plugin.settings.apiFormat);
         if (models.length === 0) return;
 
         const dropdowns = this.containerEl.querySelectorAll("select[data-model-dropdown]");
@@ -400,8 +401,11 @@ export class VaultSearchSettingTab extends PluginSettingTab {
             });
 
             for (const m of filtered) {
-                const sizeLabel = m.sizeGB < 1 ? `${(m.sizeGB * 1000).toFixed(0)}MB` : `${m.sizeGB.toFixed(1)}GB`;
-                const label = `${m.name} (${sizeLabel})`;
+                let label = m.name;
+                if (m.sizeGB > 0) {
+                    const sizeLabel = m.sizeGB < 1 ? `${(m.sizeGB * 1000).toFixed(0)}MB` : `${m.sizeGB.toFixed(1)}GB`;
+                    label = `${m.name} (${sizeLabel})`;
+                }
                 select.createEl("option", { value: m.name, text: label });
             }
             select.value = currentValue;

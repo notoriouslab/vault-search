@@ -49,7 +49,7 @@ export class DescriptionGenerator {
             .filter(f => f.path !== REPORT_PATH);
 
         const actions: DescAction[] = [];
-        const toProcess: { file: TFile; action: DescAction }[] = [];
+        let toProcess: { file: TFile; action: DescAction }[] = [];
 
         // Classify each file
         for (const file of files) {
@@ -78,13 +78,39 @@ export class DescriptionGenerator {
             }
         }
 
+        // Resume: check for existing report and skip already-completed items
+        const existingReportFile = this.plugin.app.vault.getAbstractFileByPath(REPORT_PATH);
+        if (existingReportFile instanceof TFile) {
+            const existingReport = await this.plugin.app.vault.read(existingReportFile);
+            const existing = this.parseReport(existingReport);
+            const donePaths = new Set(existing.filter(e => e.newDesc).map(e => e.path));
+            if (donePaths.size > 0) {
+                // Merge existing results back into actions
+                for (const e of existing) {
+                    const action = actions.find(a => a.path === e.path);
+                    if (action && e.newDesc) {
+                        action.newDesc = e.newDesc;
+                        action.newTags = e.newTags;
+                    }
+                }
+                // Remove already-completed items from processing queue
+                const before = toProcess.length;
+                toProcess = toProcess.filter(item => !donePaths.has(item.file.path));
+                if (toProcess.length < before) {
+                    new Notice(t.descResuming(before - toProcess.length, toProcess.length));
+                }
+            }
+        }
+
         if (toProcess.length === 0) {
             new Notice(t.descAllGood);
+            if (actions.some(a => a.newDesc)) await this.writeReport(actions);
             return;
         }
 
         // Generate descriptions with LLM
         const progress = new Notice(t.descGenerating(0, toProcess.length), 0);
+        const SAVE_INTERVAL = 30;
 
         for (let i = 0; i < toProcess.length; i++) {
             const { file, action } = toProcess[i];
@@ -128,11 +154,17 @@ export class DescriptionGenerator {
                 console.warn(`Vault Search: LLM failed for ${file.path}`, e);
             }
             progress.setMessage(t.descGenerating(i + 1, toProcess.length));
+
+            // Incremental save every SAVE_INTERVAL items
+            if ((i + 1) % SAVE_INTERVAL === 0) {
+                await this.writeReport(actions);
+            }
+            await new Promise(r => setTimeout(r, 0)); // Yield to UI thread
         }
 
         progress.hide();
 
-        // Write report
+        // Write final report
         await this.writeReport(actions);
 
         const gen = actions.filter(a => a.action === "generate" && a.newDesc).length;
@@ -212,22 +244,33 @@ export class DescriptionGenerator {
         validateServerUrl(url);
 
         const apiKey = this.plugin.settings.apiKey;
+        const apiFormat = this.plugin.settings.apiFormat;
         const headers: Record<string, string> = { "Content-Type": "application/json" };
         if (apiKey) headers["Authorization"] = `Bearer ${apiKey}`;
+
+        const isOpenAI = apiFormat === "openai";
+        const endpoint = isOpenAI ? `${url}/v1/chat/completions` : `${url}/api/chat`;
+        const body = isOpenAI
+            ? JSON.stringify({
+                model,
+                messages: [{ role: "user", content: prompt }],
+                response_format: { type: "json_object" },
+            })
+            : JSON.stringify({
+                model,
+                messages: [{ role: "user", content: prompt }],
+                stream: false,
+                format: "json",
+                think: false,
+            });
 
         let timer: ReturnType<typeof setTimeout>;
         const resp = await Promise.race([
             requestUrl({
-                url: `${url}/api/chat`,
+                url: endpoint,
                 method: "POST",
                 headers,
-                body: JSON.stringify({
-                    model,
-                    messages: [{ role: "user", content: prompt }],
-                    stream: false,
-                    format: "json",
-                    think: false,
-                }),
+                body,
                 throw: false,
             }).finally(() => clearTimeout(timer)),
             new Promise<never>((_, reject) => {
@@ -237,11 +280,13 @@ export class DescriptionGenerator {
 
         if (resp.status !== 200) {
             const errText = resp.text;
-            throw new Error(`Ollama ${resp.status}: ${errText.length > 200 ? errText.slice(0, 200) + "..." : errText}`);
+            throw new Error(`LLM ${resp.status}: ${errText.length > 200 ? errText.slice(0, 200) + "..." : errText}`);
         }
 
         const data = resp.json;
-        const raw = data.message?.content ?? "";
+        const raw = isOpenAI
+            ? (data.choices?.[0]?.message?.content ?? "")
+            : (data.message?.content ?? "");
         return this.parseGeneratedJSON(raw);
     }
 
