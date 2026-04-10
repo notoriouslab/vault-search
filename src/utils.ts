@@ -7,9 +7,21 @@ export interface OllamaModel {
     isEmbedding: boolean;
 }
 
-export async function fetchOllamaModels(url: string): Promise<OllamaModel[]> {
+export async function fetchOllamaModels(url: string, format: ApiFormat = "ollama"): Promise<OllamaModel[]> {
     try {
         validateServerUrl(url);
+
+        if (format === "openai") {
+            const resp = await requestUrl({ url: `${url}/v1/models`, throw: false });
+            if (resp.status !== 200) return [];
+            const data = resp.json;
+            return (data.data ?? []).map((m: { id: string }) => ({
+                name: m.id,
+                sizeGB: 0,
+                isEmbedding: /embed/i.test(m.id),
+            }));
+        }
+
         const resp = await requestUrl({ url: `${url}/api/tags`, throw: false });
         if (resp.status !== 200) return [];
         const data = resp.json;

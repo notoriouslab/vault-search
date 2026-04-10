@@ -80,6 +80,7 @@ export interface Locale {
     descAllGood: string;
     descNoEntries: string;
     descApplying: (done: number, total: number) => string;
+    descResuming: (done: number, remaining: number) => string;
     chunkingProgress: (done: number, total: number) => string;
     apiKeyLabel: string;
     apiKeyDesc: string;
@@ -220,6 +221,7 @@ const en: Locale = {
     descAllGood: "All notes already have good descriptions",
     descNoEntries: "No entries to apply",
     descApplying: (done, total) => `Applying: ${done}/${total}...`,
+    descResuming: (done, remaining) => `Resuming: ${done} already done, ${remaining} remaining`,
     chunkingProgress: (done, total) => `Chunking: ${done}/${total}...`,
     apiKeyLabel: "API key",
     apiKeyDesc: "Optional — for servers that require authentication",
@@ -374,6 +376,7 @@ const zhTW: Locale = {
     descAllGood: "所有筆記都已有完整 description",
     descNoEntries: "沒有需要套用的項目",
     descApplying: (done, total) => `套用中：${done}/${total}...`,
+    descResuming: (done, remaining) => `繼續生成：已完成 ${done} 篇，剩餘 ${remaining} 篇`,
     chunkingProgress: (done, total) => `Chunking：${done}/${total}...`,
     apiKeyLabel: "API key",
     apiKeyDesc: "選填 — 用於需要認證的伺服器",
