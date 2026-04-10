@@ -157,7 +157,8 @@ export class DescriptionGenerator {
 
             // Incremental save every SAVE_INTERVAL items
             if ((i + 1) % SAVE_INTERVAL === 0) {
-                await this.writeReport(actions);
+                try { await this.writeReport(actions); }
+                catch (e) { console.warn("Vault Search: incremental save failed", e); }
             }
             await new Promise(r => setTimeout(r, 0)); // Yield to UI thread
         }
